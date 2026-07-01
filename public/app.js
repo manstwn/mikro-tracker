@@ -10,6 +10,33 @@ let currentChartMinutes = 1; // Default chart view
 let routerUptimeHours = 0.5;
 let usersUptimeHours = 0.5;
 
+// Track previous values for change flash animations
+let prevRxSpeed = null;
+let prevTxSpeed = null;
+let prevLastSeen = null;
+
+// Brief flash when live data updates
+function flashElement(el, variant = 'default') {
+  if (!el) return;
+
+  const variants = {
+    default: 'data-flash',
+    green: 'data-flash data-flash--green',
+    purple: 'data-flash data-flash--purple',
+    meta: 'data-flash data-flash--meta'
+  };
+
+  el.classList.remove('data-flash', 'data-flash--green', 'data-flash--purple', 'data-flash--meta');
+  void el.offsetWidth;
+  (variants[variant] || variants.default).split(' ').forEach(cls => el.classList.add(cls));
+
+  const onEnd = () => {
+    el.classList.remove('data-flash', 'data-flash--green', 'data-flash--purple', 'data-flash--meta');
+    el.removeEventListener('animationend', onEnd);
+  };
+  el.addEventListener('animationend', onEnd);
+}
+
 // Helper: Format Bytes to human readable speed/size
 function formatBytes(bytes, decimals = 2) {
   if (!bytes || isNaN(bytes) || bytes === 0) return '0 B';
@@ -80,10 +107,14 @@ const sidebarToggleBtn = document.getElementById('sidebar-toggle');
 function openSidebar() {
   sidebar.classList.remove('collapsed');
   sidebarOverlay.classList.add('visible');
+  if (window.innerWidth <= 768) {
+    document.body.classList.add('sidebar-open');
+  }
 }
 function closeSidebar() {
   sidebar.classList.add('collapsed');
   sidebarOverlay.classList.remove('visible');
+  document.body.classList.remove('sidebar-open');
 }
 function toggleSidebar() {
   if (sidebar.classList.contains('collapsed')) {
@@ -106,9 +137,10 @@ menuButtons.forEach(btn => {
 // On mobile: start collapsed. On desktop: start open.
 function initSidebar() {
   if (window.innerWidth <= 768) {
-    sidebar.classList.add('collapsed');
+    closeSidebar();
   } else {
     sidebar.classList.remove('collapsed');
+    sidebarOverlay.classList.remove('visible');
   }
 }
 initSidebar();
@@ -383,7 +415,13 @@ function updateDashboardWidgets() {
     rTxt.style.color = 'var(--accent-red)';
   }
   rName.innerHTML = `Router Name: <strong>${router.name || 'Router'}</strong>`;
-  rSeen.textContent = `Last Seen: ${formatDateTime(router.lastSeen)}`;
+
+  const lastSeenText = `Last Seen: ${formatDateTime(router.lastSeen)}`;
+  if (prevLastSeen !== null && router.lastSeen !== prevLastSeen) {
+    flashElement(rSeen, 'meta');
+  }
+  rSeen.textContent = lastSeenText;
+  prevLastSeen = router.lastSeen;
 
   // Users Widget
   const userList = Object.values(users);
@@ -395,8 +433,22 @@ function updateDashboardWidgets() {
   document.getElementById('stats-users-pct').textContent = `${pct}% of total monitored (${totalUsers})`;
 
   // RX/TX Widget
-  document.getElementById('stats-rx-speed').textContent = formatBytes(router.rxSpeed) + '/s';
-  document.getElementById('stats-tx-speed').textContent = formatBytes(router.txSpeed) + '/s';
+  const rxEl = document.getElementById('stats-rx-speed');
+  const txEl = document.getElementById('stats-tx-speed');
+  const rxCard = rxEl.closest('.stats-card');
+  const txCard = txEl.closest('.stats-card');
+
+  if (prevRxSpeed !== null && router.rxSpeed !== prevRxSpeed) {
+    flashElement(rxCard, 'green');
+  }
+  if (prevTxSpeed !== null && router.txSpeed !== prevTxSpeed) {
+    flashElement(txCard, 'purple');
+  }
+
+  rxEl.textContent = formatBytes(router.rxSpeed) + '/s';
+  txEl.textContent = formatBytes(router.txSpeed) + '/s';
+  prevRxSpeed = router.rxSpeed;
+  prevTxSpeed = router.txSpeed;
 
   // Webhook stats widget
   const lastWebhookTime = router.lastSeen;
