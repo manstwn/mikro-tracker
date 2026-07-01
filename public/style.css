@@ -1495,17 +1495,18 @@ button, input, select, textarea {
 /* Time Range Pill Filter Row */
 .time-range-pills {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   padding: 0 0 14px 0;
   flex-wrap: wrap;
 }
 
 .range-pill {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  padding: 4px 12px;
+  padding: 7px 16px;
+  min-height: 34px;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
@@ -1662,12 +1663,13 @@ button, input, select, textarea {
 
   /* Range pills wrap freely */
   .time-range-pills {
-    gap: 4px;
+    gap: 6px;
   }
 
   .range-pill {
-    padding: 3px 9px;
-    font-size: 10px;
+    padding: 6px 13px;
+    min-height: 32px;
+    font-size: 11px;
   }
 
   /* User row: stack meta and bar */

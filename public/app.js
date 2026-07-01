@@ -12,9 +12,9 @@ let selectedUsername = null;
 let trafficChart = null;
 let currentChartMinutes = 1; // Default chart view
 
-// Uptime bar range state (hours) — default 30m
-let routerUptimeHours = 0.5;
-let usersUptimeHours = 0.5;
+// Uptime bar range state (hours) — default 1D
+let routerUptimeHours = 24;
+let usersUptimeHours = 24;
 
 // Track previous values for change flash animations
 let prevRxSpeed = null;
