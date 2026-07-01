@@ -160,15 +160,24 @@ document.getElementById('goto-timeline').addEventListener('click', () => {
 function setupRangePills(containerId, onSelect) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  container.querySelectorAll('.range-pill').forEach(pill => {
-    // Apply initial active style
-    if (pill.dataset.active === 'true') pill.classList.add('active');
+
+  const pills = [...container.querySelectorAll('.range-pill')];
+  const initialPill = pills.find(p => p.dataset.active === 'true')
+    || pills.find(p => p.classList.contains('active'));
+
+  pills.forEach(pill => {
     pill.addEventListener('click', () => {
-      container.querySelectorAll('.range-pill').forEach(p => p.classList.remove('active'));
+      pills.forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       onSelect(parseFloat(pill.dataset.hours));
     });
   });
+
+  if (initialPill) {
+    pills.forEach(p => p.classList.remove('active'));
+    initialPill.classList.add('active');
+    onSelect(parseFloat(initialPill.dataset.hours));
+  }
 }
 
 setupRangePills('router-uptime-range', (hours) => {
