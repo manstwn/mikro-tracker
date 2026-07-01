@@ -1,5 +1,11 @@
 const socket = io();
 
+socket.on('connect_error', (err) => {
+  if (err.message === 'Unauthorized') {
+    window.location.replace('/pin.html');
+  }
+});
+
 // State caching
 let currentData = null;
 let selectedUsername = null;

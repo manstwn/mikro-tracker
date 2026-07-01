@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import * as db from './db.js';
 import * as monitor from './monitor.js';
+import * as auth from './auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +23,8 @@ const io = new Server(httpServer, {
   }
 });
 
+io.use(auth.socketAuthMiddleware);
+
 const PORT = 2041;
 const startTime = Date.now();
 
@@ -32,6 +35,76 @@ let invalidKeysReceived = 0;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Auth endpoints (public)
+app.post('/api/auth/pin', (req, res) => {
+  if (!auth.isPinEnabled()) {
+    return res.json({ success: true });
+  }
+
+  const pin = String(req.body?.pin || '');
+  if (!auth.verifyPin(pin)) {
+    return res.status(401).json({ success: false, error: 'Invalid PIN' });
+  }
+
+  const token = auth.createSession();
+  res.setHeader('Set-Cookie', auth.buildSessionCookie(token));
+  res.json({ success: true });
+});
+
+app.get('/api/auth/check', (req, res) => {
+  if (!auth.isPinEnabled()) {
+    return res.json({ authenticated: true, pinRequired: false });
+  }
+
+  if (auth.isValidSession(auth.getSessionToken(req))) {
+    return res.json({ authenticated: true, pinRequired: true });
+  }
+
+  res.status(401).json({ authenticated: false, pinRequired: true });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  auth.destroySession(auth.getSessionToken(req));
+  res.setHeader('Set-Cookie', auth.clearSessionCookie());
+  res.json({ success: true });
+});
+
+// Protect dashboard, APIs, and static app assets when PIN is set
+app.use(auth.authMiddleware);
+
+// Public monitoring endpoints (no PIN — MikroTik / health checks)
+app.get('/webhook/:id', (req, res) => {
+  const result = monitor.handleWebhook(req.query);
+
+  if (!result.authorized) {
+    invalidKeysReceived++;
+    webhooksIgnored++;
+    return res.status(403).send('Forbidden: Invalid Key');
+  }
+
+  if (result.paused) {
+    webhooksIgnored++;
+    return res.send('System Paused');
+  }
+
+  if (result.success === false) {
+    webhooksIgnored++;
+    return res.status(400).send(`Bad Request: ${result.error}`);
+  }
+
+  webhooksReceived++;
+  res.send('OK');
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'UP',
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.use(express.static(path.join(WORKSPACE_DIR, 'public')));
 
 // Helpers to get all monitoring data for frontend
@@ -58,39 +131,6 @@ function getDashboardPayload() {
 // WebSocket broadcast callback setup
 monitor.setBroadcastCallback(() => {
   io.emit('update', getDashboardPayload());
-});
-
-// 1. Webhook Endpoint
-app.get('/webhook/:id', (req, res) => {
-  const result = monitor.handleWebhook(req.query);
-
-  if (!result.authorized) {
-    invalidKeysReceived++;
-    webhooksIgnored++;
-    return res.status(403).send('Forbidden: Invalid Key');
-  }
-
-  if (result.paused) {
-    webhooksIgnored++;
-    return res.send('System Paused');
-  }
-
-  if (result.success === false) {
-    webhooksIgnored++;
-    return res.status(400).send(`Bad Request: ${result.error}`);
-  }
-
-  webhooksReceived++;
-  res.send('OK');
-});
-
-// 2. Health Endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'UP',
-    uptime: Math.floor((Date.now() - startTime) / 1000),
-    timestamp: new Date().toISOString()
-  });
 });
 
 // 3. Metrics Endpoint
@@ -255,6 +295,6 @@ httpServer.listen(PORT, () => {
   console.log('===============================================');
   console.log(` MikroTik Ultra Monitoring Platform is running`);
   console.log(` Port: ${PORT}`);
-  console.log(` Node Environment: development`);
+  console.log(` PIN Auth: ${auth.isPinEnabled() ? 'enabled' : 'disabled (set PIN in .env)'}`);
   console.log('===============================================');
 });
