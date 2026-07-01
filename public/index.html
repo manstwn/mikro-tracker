@@ -88,7 +88,13 @@
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </button>
-          <h1 id="section-title">Dashboard</h1>
+          <div class="header-title-group">
+            <h1 id="section-title">Dashboard</h1>
+            <div class="header-router-meta">
+              <span id="router-name-txt">Router Name: -</span>
+              <span id="router-last-seen-txt">Last Seen: Never</span>
+            </div>
+          </div>
         </div>
         
         <div class="header-actions">
@@ -110,14 +116,14 @@
           <!-- Stats Grid -->
           <div class="grid-stats">
             <!-- Router Widget -->
-            <div class="card glass status-card">
-              <div class="card-title">Router Status</div>
-              <div class="status-content">
-                <span class="status-indicator-dot" id="router-dot"></span>
-                <span class="status-text-large" id="router-status-txt">OFFLINE</span>
+            <div class="card glass stats-card status-card">
+              <div class="stats-info">
+                <div class="stats-label">Router Status</div>
+                <div class="status-content">
+                  <span class="status-indicator-dot" id="router-dot"></span>
+                  <span class="status-text-large" id="router-status-txt">OFFLINE</span>
+                </div>
               </div>
-              <div class="status-sub" id="router-name-txt">Router Name: -</div>
-              <div class="status-sub" id="router-last-seen-txt">Last Seen: Never</div>
             </div>
 
             <!-- Active User Card -->
