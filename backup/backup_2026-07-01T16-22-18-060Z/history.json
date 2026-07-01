@@ -1,0 +1,51 @@
+[
+  {
+    "time": "2026-07-01T16:21:33.243Z",
+    "type": "user_online",
+    "user": "user7"
+  },
+  {
+    "time": "2026-07-01T16:21:33.243Z",
+    "type": "user_online",
+    "user": "user6"
+  },
+  {
+    "time": "2026-07-01T16:21:33.243Z",
+    "type": "user_online",
+    "user": "user5"
+  },
+  {
+    "time": "2026-07-01T16:21:33.243Z",
+    "type": "user_online",
+    "user": "user4"
+  },
+  {
+    "time": "2026-07-01T16:21:33.243Z",
+    "type": "user_online",
+    "user": "user3"
+  },
+  {
+    "time": "2026-07-01T16:18:57.007Z",
+    "type": "user_offline",
+    "user": "user3"
+  },
+  {
+    "time": "2026-07-01T16:17:31.187Z",
+    "type": "user_online",
+    "user": "user3"
+  },
+  {
+    "time": "2026-07-01T16:14:11.886Z",
+    "type": "user_online",
+    "user": "user2"
+  },
+  {
+    "time": "2026-07-01T16:14:11.886Z",
+    "type": "user_online",
+    "user": "user1"
+  },
+  {
+    "time": "2026-07-01T16:14:11.886Z",
+    "type": "router_online"
+  }
+]

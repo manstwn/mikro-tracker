@@ -1,0 +1,9 @@
+{
+  "status": "offline",
+  "lastSeen": "2026-07-01T16:06:09.771Z",
+  "rx": 400,
+  "tx": 200,
+  "rxSpeed": 200,
+  "txSpeed": 100,
+  "name": "TestRouter"
+}

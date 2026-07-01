@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1782922352357_xqopt",
+    "time": "2026-07-01T16:12:32.357Z",
+    "type": "User Online",
+    "message": "User user2 is now online."
+  },
+  {
+    "id": "1782922352354_7lvp0",
+    "time": "2026-07-01T16:12:32.354Z",
+    "type": "User Online",
+    "message": "User user1 is now online."
+  },
+  {
+    "id": "1782922352351_q5jyb",
+    "time": "2026-07-01T16:12:32.351Z",
+    "type": "Router Restored",
+    "message": "Router Router has restored connection."
+  },
+  {
+    "id": "1782922279813_npp55",
+    "time": "2026-07-01T16:11:19.813Z",
+    "type": "Database Reset",
+    "message": "The database has been fully reset to initial state."
+  }
+]

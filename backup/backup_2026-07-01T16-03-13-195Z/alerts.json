@@ -1,0 +1,44 @@
+[
+  {
+    "id": "1782921780162_ry8f0",
+    "time": "2026-07-01T16:03:00.162Z",
+    "type": "Storage Recovered",
+    "message": "Files recovered from backup: config.json"
+  },
+  {
+    "id": "1782921780117_jkqlm",
+    "time": "2026-07-01T16:03:00.117Z",
+    "type": "Webhook Lost",
+    "message": "Router connection lost. Last webhook received 5 minutes ago."
+  },
+  {
+    "id": "1782921780110_mmpd5",
+    "time": "2026-07-01T16:03:00.110Z",
+    "type": "User Offline",
+    "message": "User user1 has disconnected."
+  },
+  {
+    "id": "1782921780093_9i6rj",
+    "time": "2026-07-01T16:03:00.093Z",
+    "type": "Secret Key Invalid",
+    "message": "Unauthorized webhook attempt ignored."
+  },
+  {
+    "id": "1782921780064_i3vxv",
+    "time": "2026-07-01T16:03:00.064Z",
+    "type": "User Online",
+    "message": "User user2 is now online."
+  },
+  {
+    "id": "1782921780054_f6tmc",
+    "time": "2026-07-01T16:03:00.054Z",
+    "type": "User Online",
+    "message": "User user1 is now online."
+  },
+  {
+    "id": "1782921780041_dft0k",
+    "time": "2026-07-01T16:03:00.041Z",
+    "type": "Router Restored",
+    "message": "Router TestRouter has restored connection."
+  }
+]

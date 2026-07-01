@@ -1,0 +1,65 @@
+{
+  "user1": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:24:03.325Z",
+    "lastOnline": "2026-07-01T16:14:11.886Z",
+    "lastOffline": null,
+    "totalOnline": 0,
+    "loginCount": 1,
+    "disconnectCount": 0
+  },
+  "user2": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:24:03.325Z",
+    "lastOnline": "2026-07-01T16:14:11.886Z",
+    "lastOffline": null,
+    "totalOnline": 0,
+    "loginCount": 1,
+    "disconnectCount": 0
+  },
+  "user3": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:24:03.325Z",
+    "lastOnline": "2026-07-01T16:21:33.243Z",
+    "lastOffline": "2026-07-01T16:18:57.007Z",
+    "totalOnline": 86,
+    "loginCount": 2,
+    "disconnectCount": 1
+  },
+  "user4": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:24:03.325Z",
+    "lastOnline": "2026-07-01T16:21:33.243Z",
+    "lastOffline": null,
+    "totalOnline": 0,
+    "loginCount": 1,
+    "disconnectCount": 0
+  },
+  "user5": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:24:03.325Z",
+    "lastOnline": "2026-07-01T16:21:33.243Z",
+    "lastOffline": null,
+    "totalOnline": 0,
+    "loginCount": 1,
+    "disconnectCount": 0
+  },
+  "user6": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:24:03.325Z",
+    "lastOnline": "2026-07-01T16:21:33.243Z",
+    "lastOffline": null,
+    "totalOnline": 0,
+    "loginCount": 1,
+    "disconnectCount": 0
+  },
+  "user7": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:24:03.325Z",
+    "lastOnline": "2026-07-01T16:21:33.243Z",
+    "lastOffline": null,
+    "totalOnline": 0,
+    "loginCount": 1,
+    "disconnectCount": 0
+  }
+}

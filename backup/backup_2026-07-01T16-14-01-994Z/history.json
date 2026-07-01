@@ -1,0 +1,16 @@
+[
+  {
+    "time": "2026-07-01T16:12:32.349Z",
+    "type": "user_online",
+    "user": "user2"
+  },
+  {
+    "time": "2026-07-01T16:12:32.349Z",
+    "type": "user_online",
+    "user": "user1"
+  },
+  {
+    "time": "2026-07-01T16:12:32.349Z",
+    "type": "router_online"
+  }
+]

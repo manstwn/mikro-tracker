@@ -1,0 +1,11 @@
+{
+  "secretKey": "thiskey219Kx",
+  "webhookInterval": 30,
+  "offlineTimeoutUser": 60,
+  "offlineTimeoutRouter": 300,
+  "historyRetention": 365,
+  "trafficRetention": 30,
+  "logRetention": 90,
+  "autoSave": true,
+  "autoBackup": true
+}

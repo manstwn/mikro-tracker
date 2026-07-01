@@ -1,0 +1,30 @@
+[
+  {
+    "time": "2026-07-01T16:04:08.188Z",
+    "type": "user_offline",
+    "user": "user2"
+  },
+  {
+    "time": "2026-07-01T16:03:00.115Z",
+    "type": "router_offline"
+  },
+  {
+    "time": "2026-07-01T16:03:00.108Z",
+    "type": "user_offline",
+    "user": "user1"
+  },
+  {
+    "time": "2026-07-01T16:03:00.035Z",
+    "type": "user_online",
+    "user": "user2"
+  },
+  {
+    "time": "2026-07-01T16:03:00.035Z",
+    "type": "user_online",
+    "user": "user1"
+  },
+  {
+    "time": "2026-07-01T16:03:00.035Z",
+    "type": "router_online"
+  }
+]

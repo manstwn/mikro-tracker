@@ -1,0 +1,20 @@
+{
+  "user1": {
+    "status": "offline",
+    "lastSeen": "2026-07-01T16:08:19.903Z",
+    "lastOnline": "2026-07-01T16:09:29.884Z",
+    "lastOffline": "2026-07-01T16:09:29.904Z",
+    "totalOnline": 210,
+    "loginCount": 3,
+    "disconnectCount": 3
+  },
+  "user2": {
+    "status": "online",
+    "lastSeen": "2026-07-01T16:09:29.900Z",
+    "lastOnline": "2026-07-01T16:08:08.520Z",
+    "lastOffline": "2026-07-01T16:04:08.188Z",
+    "totalOnline": 68,
+    "loginCount": 2,
+    "disconnectCount": 1
+  }
+}
