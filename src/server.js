@@ -211,6 +211,7 @@ app.post('/api/settings', (req, res) => {
   updated.historyRetention = parseInt(updated.historyRetention, 10) || 365;
   updated.trafficRetention = parseInt(updated.trafficRetention, 10) || 30;
   updated.logRetention = parseInt(updated.logRetention, 10) || 90;
+  updated.speedCapacity = parseInt(updated.speedCapacity, 10) || 50;
   updated.autoSave = req.body.autoSave !== undefined ? !!req.body.autoSave : currentConfig.autoSave;
   updated.autoBackup = req.body.autoBackup !== undefined ? !!req.body.autoBackup : currentConfig.autoBackup;
   
@@ -250,6 +251,32 @@ app.post('/api/system/mode', (req, res) => {
   }
 
   res.json({ success: true, mode });
+});
+
+// Delete user API endpoint
+app.delete('/api/users/:username', (req, res) => {
+  const { username } = req.params;
+  const users = db.read('users.json');
+  if (!users[username]) {
+    return res.status(404).json({ success: false, error: 'User not found' });
+  }
+
+  if (users[username].status === 'online') {
+    return res.status(400).json({ success: false, error: 'Cannot delete an active online user' });
+  }
+
+  delete users[username];
+  db.write('users.json', users);
+
+  const sessions = db.read('sessions.json');
+  const filteredSessions = sessions.filter(s => s && s.user !== username);
+  db.write('sessions.json', filteredSessions);
+
+  db.addLog('User Deleted', `User ${username} was removed from monitoring.`);
+  db.addAlert('User Deleted', `User ${username} session data and monitoring records cleared.`);
+
+  io.emit('update', getDashboardPayload());
+  res.json({ success: true });
 });
 
 // 7. Full reset all data

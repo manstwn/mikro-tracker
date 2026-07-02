@@ -474,7 +474,14 @@ function updateDashboardWidgets() {
 
   if (router.status === 'online') {
     rDot.className = 'status-indicator-dot online';
-    rTxt.textContent = 'ONLINE';
+    const capacity = currentData.config?.speedCapacity || 0;
+    if (capacity > 0) {
+      const rxMbps = (router.rxSpeed * 8) / 1000000;
+      const pct = Math.round((rxMbps / capacity) * 100);
+      rTxt.textContent = `ONLINE (${pct}% Capacity)`;
+    } else {
+      rTxt.textContent = 'ONLINE';
+    }
     rTxt.style.color = 'var(--accent-green)';
   } else {
     rDot.className = 'status-indicator-dot';
@@ -513,12 +520,12 @@ function updateDashboardWidgets() {
   }
 
   const currentRx = formatMbps(router.rxSpeed);
-  const prevRxHtml = prevRxSpeed !== null ? `<span class="stats-value-prev">${formatMbps(prevRxSpeed)}</span>` : '';
-  rxEl.innerHTML = `${currentRx} ${prevRxHtml}`;
+  const prevRxHtml = prevRxSpeed !== null ? ` - <span class="stats-value-prev">${formatMbps(prevRxSpeed)}</span>` : '';
+  rxEl.innerHTML = `${currentRx}${prevRxHtml}`;
 
   const currentTx = formatMbps(router.txSpeed);
-  const prevTxHtml = prevTxSpeed !== null ? `<span class="stats-value-prev">${formatMbps(prevTxSpeed)}</span>` : '';
-  txEl.innerHTML = `${currentTx} ${prevTxHtml}`;
+  const prevTxHtml = prevTxSpeed !== null ? ` - <span class="stats-value-prev">${formatMbps(prevTxSpeed)}</span>` : '';
+  txEl.innerHTML = `${currentTx}${prevTxHtml}`;
 
   prevRxSpeed = router.rxSpeed;
   prevTxSpeed = router.txSpeed;
@@ -587,7 +594,7 @@ function renderUsersTable() {
   const filteredUsers = userList.filter(([username]) => username.toLowerCase().includes(query));
 
   if (filteredUsers.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center">No users match search search criteria.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center">No users match search search criteria.</td></tr>`;
     return;
   }
 
@@ -614,6 +621,9 @@ function renderUsersTable() {
     }
 
     const isActive = selectedUsername === username ? 'class="active-user-row"' : '';
+    const actionCell = isOnline
+      ? '<td>-</td>'
+      : `<td><button class="delete-btn" onclick="event.stopPropagation(); deleteUser('${username}')">Delete</button></td>`;
 
     return `
       <tr onclick="selectUser('${username}')" ${isActive}>
@@ -624,6 +634,7 @@ function renderUsersTable() {
         <td>${user.loginCount || 0}</td>
         <td>${user.disconnectCount || 0}</td>
         <td>${formatDateTime(user.lastSeen)}</td>
+        ${actionCell}
       </tr>
     `;
   }).join('');
@@ -634,6 +645,30 @@ window.selectUser = function(username) {
   selectedUsername = username;
   renderUsersTable(); // Redraw selection class
   renderUserDetailPanel();
+};
+
+window.deleteUser = function(username) {
+  const confirmed = confirm(`Are you sure you want to remove user "${username}" from monitoring? This will delete all of their session history.`);
+  if (!confirmed) return;
+
+  apiFetch(`/api/users/${username}`, {
+    method: 'DELETE'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(`User "${username}" successfully deleted.`);
+      if (selectedUsername === username) {
+        selectedUsername = null;
+      }
+    } else {
+      alert(`Failed to delete user: ${data.error}`);
+    }
+  })
+  .catch(err => {
+    console.error('Error deleting user:', err);
+    alert('Error deleting user: ' + err.message);
+  });
 };
 
 // Render Selected User Details Panel
@@ -833,6 +868,9 @@ function populateSettingsForm() {
   if (document.activeElement.id !== 'set-log-retention') {
     document.getElementById('set-log-retention').value = config.logRetention || 90;
   }
+  if (document.activeElement.id !== 'set-speed-capacity') {
+    document.getElementById('set-speed-capacity').value = config.speedCapacity || 50;
+  }
   
   document.getElementById('set-auto-backup').checked = !!config.autoBackup;
 }
@@ -849,6 +887,7 @@ document.getElementById('settings-form').addEventListener('submit', (e) => {
     historyRetention: parseInt(document.getElementById('set-history-retention').value, 10),
     trafficRetention: parseInt(document.getElementById('set-traffic-retention').value, 10),
     logRetention: parseInt(document.getElementById('set-log-retention').value, 10),
+    speedCapacity: parseInt(document.getElementById('set-speed-capacity').value, 10),
     autoBackup: document.getElementById('set-auto-backup').checked
   };
 

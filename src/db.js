@@ -22,7 +22,8 @@ const DEFAULT_FILES = {
     trafficRetention: 30,
     logRetention: 90,
     autoSave: true,
-    autoBackup: true
+    autoBackup: true,
+    speedCapacity: 50
   },
   'system.json': {
     mode: "RUNNING"
