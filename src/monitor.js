@@ -115,11 +115,61 @@ export function handleWebhook(query) {
   const users = db.read('users.json');
   const sessions = db.read('sessions.json');
 
-  // Process users reported as active in the webhook
-  for (const username of onlineUsersInWebhook) {
-    const user = users[username];
+  const onlineSet = new Set(onlineUsersInWebhook);
 
-    if (!user) {
+  // A. Process existing users in database
+  for (const [username, user] of Object.entries(users)) {
+    if (onlineSet.has(username)) {
+      // User is online
+      const prevStatus = user.status;
+      user.lastSeen = now;
+
+      if (prevStatus !== 'online') {
+        // Transition Offline -> Online
+        user.status = 'online';
+        user.lastOnline = now;
+        user.loginCount = (user.loginCount || 0) + 1;
+
+        // Start a new session
+        sessions.push({
+          id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 5),
+          user: username,
+          start: now,
+          end: null,
+          duration: null
+        });
+
+        db.addHistoryEvent('user_online', username, now);
+        db.addAlert('User Online', `User ${username} is now online.`);
+        db.addLog('User Online', `User ${username} connected.`);
+      }
+    } else {
+      // User is offline (not in webhook)
+      if (user.status === 'online') {
+        // Transition Online -> Offline
+        user.status = 'offline';
+        user.lastOffline = now;
+        user.disconnectCount = (user.disconnectCount || 0) + 1;
+
+        // Close the active session
+        const activeSession = sessions.slice().reverse().find(s => s.user === username && s.end === null);
+        if (activeSession) {
+          activeSession.end = now;
+          const duration = Math.round((new Date(now).getTime() - new Date(activeSession.start).getTime()) / 1000);
+          activeSession.duration = duration;
+          user.totalOnline = (user.totalOnline || 0) + duration;
+        }
+
+        db.addHistoryEvent('user_offline', username, now);
+        db.addAlert('User Offline', `User ${username} has disconnected.`);
+        db.addLog('User Offline', `User ${username} disconnected.`);
+      }
+    }
+  }
+
+  // B. Handle new users that are in the webhook but not in the database yet
+  for (const username of onlineUsersInWebhook) {
+    if (!users[username]) {
       // New User creation
       users[username] = {
         status: 'online',
@@ -143,29 +193,6 @@ export function handleWebhook(query) {
       db.addHistoryEvent('user_online', username, now);
       db.addAlert('User Online', `User ${username} is now online.`);
       db.addLog('User Online', `User ${username} connected.`);
-    } else {
-      const prevStatus = user.status;
-      user.lastSeen = now;
-
-      if (prevStatus !== 'online') {
-        // Transition Offline -> Online
-        user.status = 'online';
-        user.lastOnline = now;
-        user.loginCount = (user.loginCount || 0) + 1;
-
-        // Start a new session
-        sessions.push({
-          id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 5),
-          user: username,
-          start: now,
-          end: null,
-          duration: null
-        });
-
-        db.addHistoryEvent('user_online', username, now);
-        db.addAlert('User Online', `User ${username} is now online.`);
-        db.addLog('User Online', `User ${username} connected.`);
-      }
     }
   }
 
