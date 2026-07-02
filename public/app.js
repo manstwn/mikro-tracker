@@ -84,6 +84,14 @@ function formatBytes(bytes, decimals = 2) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
+// Helper: Format Bytes to Megabits
+function formatMbps(bytes) {
+  if (!bytes || isNaN(bytes) || bytes === 0) return '0.00 Mbps';
+  const bits = bytes * 8;
+  const mbps = bits / 1000000;
+  return mbps.toFixed(2) + ' Mbps';
+}
+
 // Helper: Format duration (seconds to readable string, e.g. 1h 12m 30s)
 function formatDuration(sec) {
   if (!sec || isNaN(sec) || sec < 0) return '0s';
@@ -325,7 +333,7 @@ function initChart() {
           intersect: false,
           callbacks: {
             label: function(context) {
-              return context.dataset.label + ': ' + formatBytes(context.parsed.y) + '/s';
+              return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' Mbps';
             }
           }
         }
@@ -341,7 +349,7 @@ function initChart() {
             color: '#8b9bb4',
             font: { family: 'Inter', size: 10 },
             callback: function(value) {
-              return formatBytes(value) + '/s';
+              return value.toFixed(2) + ' Mbps';
             }
           }
         }
@@ -364,8 +372,8 @@ function renderTrafficChart() {
   });
 
   const labels = filteredTraffic.map(pt => formatTimeOnly(pt.time));
-  const rxData = filteredTraffic.map(pt => pt.rxSpeed);
-  const txData = filteredTraffic.map(pt => pt.txSpeed);
+  const rxData = filteredTraffic.map(pt => (pt.rxSpeed * 8) / 1000000);
+  const txData = filteredTraffic.map(pt => (pt.txSpeed * 8) / 1000000);
 
   trafficChart.data.labels = labels;
   trafficChart.data.datasets[0].data = rxData;
@@ -504,8 +512,14 @@ function updateDashboardWidgets() {
     flashElement(txCard, 'purple');
   }
 
-  rxEl.textContent = formatBytes(router.rxSpeed) + '/s';
-  txEl.textContent = formatBytes(router.txSpeed) + '/s';
+  const currentRx = formatMbps(router.rxSpeed);
+  const prevRxHtml = prevRxSpeed !== null ? `<span class="stats-value-prev">${formatMbps(prevRxSpeed)}</span>` : '';
+  rxEl.innerHTML = `${currentRx} ${prevRxHtml}`;
+
+  const currentTx = formatMbps(router.txSpeed);
+  const prevTxHtml = prevTxSpeed !== null ? `<span class="stats-value-prev">${formatMbps(prevTxSpeed)}</span>` : '';
+  txEl.innerHTML = `${currentTx} ${prevTxHtml}`;
+
   prevRxSpeed = router.rxSpeed;
   prevTxSpeed = router.txSpeed;
 
@@ -708,8 +722,8 @@ function renderRouterDiagnostics() {
   document.getElementById('r-details-lastseen').textContent = formatDateTime(router.lastSeen);
   document.getElementById('r-details-rx').textContent = formatBytes(router.rx);
   document.getElementById('r-details-tx').textContent = formatBytes(router.tx);
-  document.getElementById('r-details-rxspeed').textContent = formatBytes(router.rxSpeed) + '/s';
-  document.getElementById('r-details-txspeed').textContent = formatBytes(router.txSpeed) + '/s';
+  document.getElementById('r-details-rxspeed').textContent = formatMbps(router.rxSpeed);
+  document.getElementById('r-details-txspeed').textContent = formatMbps(router.txSpeed);
 
   // Example integration link
   const origin = window.location.origin;
