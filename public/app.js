@@ -1065,35 +1065,50 @@ function renderDashboardUsers() {
     return;
   }
 
-  // Sort purely alphabetically (0-9 → a-z) regardless of status
-  const sortedUsers = users.sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' }));
+  // Sort purely alphabetically (0-9 → a-z) regardless of status (with fallback if options not supported)
+  let sortedUsers;
+  try {
+    sortedUsers = users.sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' }));
+  } catch (e) {
+    sortedUsers = users.sort((a, b) => a[0].localeCompare(b[0]));
+  }
 
   const now = Date.now() - serverTimeOffset;
   const numBlocks = 30;
   const windowMs = usersUptimeHours * 60 * 60 * 1000;
 
   // Calculate overall system monitoring start time (earliest event in history)
-  const systemEvents = currentData.history.map(e => new Date(e.time).getTime());
+  const systemEvents = currentData.history
+    .filter(e => e && e.time)
+    .map(e => new Date(e.time).getTime())
+    .filter(t => !isNaN(t));
   const monitoringStart = systemEvents.length > 0 ? Math.min(...systemEvents) : now;
 
   listContainer.innerHTML = sortedUsers.map(([username, user]) => {
     const isOnline = user.status === 'online';
-    const userSessions = currentData.sessions.filter(s => s.user === username);
+    const userSessions = currentData.sessions ? currentData.sessions.filter(s => s && s.user === username) : [];
     
     // Find user's first online session start time
-    const userEarliestSession = userSessions.length > 0 
-      ? Math.min(...userSessions.map(s => new Date(s.start).getTime())) 
+    const validSessionTimes = userSessions
+      .filter(s => s && s.start)
+      .map(s => new Date(s.start).getTime())
+      .filter(t => !isNaN(t));
+    const userEarliestSession = validSessionTimes.length > 0 
+      ? Math.min(...validSessionTimes) 
       : Infinity;
 
     // Use minimum of system start and user's first session to define monitoring duration
     const earliestStart = Math.min(monitoringStart, userEarliestSession);
 
     // Construct user online intervals
-    const intervals = userSessions.map(s => ({
-      start: new Date(s.start).getTime(),
-      end: s.end ? new Date(s.end).getTime() : now,
-      status: 'online'
-    }));
+    const intervals = userSessions
+      .filter(s => s && s.start)
+      .map(s => ({
+        start: new Date(s.start).getTime(),
+        end: s.end ? new Date(s.end).getTime() : now,
+        status: 'online'
+      }))
+      .filter(inv => !isNaN(inv.start) && !isNaN(inv.end));
 
     const { uptimePct, blocks } = calculateUptime(intervals, earliestStart, now, windowMs, numBlocks);
 
