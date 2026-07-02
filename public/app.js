@@ -884,6 +884,78 @@ function renderSystemLogs() {
   }).join('');
 }
 
+// Helper to calculate interval-based uptime and block statuses
+function calculateUptime(intervals, earliestStart, now, windowMs, numBlocks) {
+  const windowStart = now - windowMs;
+  const actualStart = Math.max(windowStart, earliestStart);
+  const totalDurationMs = now - actualStart;
+
+  // Calculate total online duration in the active monitoring window
+  let totalOnlineMs = 0;
+  if (totalDurationMs > 0) {
+    intervals.forEach(inv => {
+      if (inv.status === 'online') {
+        const overlapStart = Math.max(inv.start, actualStart);
+        const overlapEnd = Math.min(inv.end, now);
+        if (overlapEnd > overlapStart) {
+          totalOnlineMs += overlapEnd - overlapStart;
+        }
+      }
+    });
+  }
+
+  const uptimePct = totalDurationMs > 0
+    ? Math.round((totalOnlineMs / totalDurationMs) * 100)
+    : 100;
+
+  // Calculate blocks
+  const blockDuration = windowMs / numBlocks;
+  const blocks = [];
+
+  for (let i = 0; i < numBlocks; i++) {
+    const blockStart = now - (numBlocks - i) * blockDuration;
+    const blockEnd = now - (numBlocks - 1 - i) * blockDuration;
+
+    if (blockEnd < earliestStart) {
+      blocks.push({ status: 'no-data', time: blockEnd, tip: 'Before monitoring started' });
+    } else {
+      const activeStart = Math.max(blockStart, earliestStart);
+      const activeEnd = blockEnd;
+      const activeDuration = activeEnd - activeStart;
+
+      let onlineInBlock = 0;
+      intervals.forEach(inv => {
+        if (inv.status === 'online') {
+          const overlapStart = Math.max(inv.start, activeStart);
+          const overlapEnd = Math.min(inv.end, activeEnd);
+          if (overlapEnd > overlapStart) {
+            onlineInBlock += overlapEnd - overlapStart;
+          }
+        }
+      });
+
+      let status = 'offline';
+      if (onlineInBlock >= activeDuration * 0.999) { // 99.9% online threshold
+        status = 'online';
+      } else if (onlineInBlock === 0) {
+        status = 'offline';
+      } else {
+        status = 'offline'; // If there is any disconnect in the block, show offline
+      }
+
+      const blockDate = new Date(blockEnd);
+      const timeStr = blockDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = blockDate.toLocaleDateString();
+      const onlinePct = Math.round((onlineInBlock / activeDuration) * 100);
+      const tip = `${dateStr} ${timeStr} — Online: ${onlinePct}%`;
+
+      blocks.push({ status, time: blockEnd, tip, onlinePct });
+    }
+  }
+
+  return { uptimePct, blocks };
+}
+
 // Render Router Uptime History Timeline Bar
 function renderUptimeBar() {
   const bar = document.getElementById('router-uptime-bar');
@@ -896,7 +968,6 @@ function renderUptimeBar() {
   const now = Date.now();
   const windowMs = hours * 60 * 60 * 1000;
   const numBlocks = 40;
-  const blockDuration = windowMs / numBlocks;
 
   // Update axis labels
   if (labelStart) labelStart.textContent = formatRangeLabel(hours);
@@ -912,50 +983,30 @@ function renderUptimeBar() {
   const monitoringStart = routerEvents.length > 0 ? routerEvents[0].time : now;
   const currentRouterStatus = currentData.router.status;
 
-  let onlineCount = 0;
-  let activeBlocks = 0;
-  let blocksHtml = [];
+  // Construct intervals
+  const intervals = [];
+  if (routerEvents.length === 0) {
+    intervals.push({ start: monitoringStart, end: now, status: currentRouterStatus });
+  } else {
+    let lastTime = routerEvents[0].time;
+    let lastStatus = routerEvents[0].type === 'router_online' ? 'online' : 'offline';
 
-  for (let i = 0; i < numBlocks; i++) {
-    const blockTime = now - (numBlocks - 1 - i) * blockDuration;
-    const blockDate = new Date(blockTime);
-
-    let status;
-
-    if (blockTime < monitoringStart) {
-      // Before monitoring started — no data
-      status = 'no-data';
-    } else {
-      activeBlocks++;
-      // Find the last event at or before this block time
-      const latestEvent = routerEvents.reduce((prev, curr) =>
-        curr.time <= blockTime ? curr : prev, null);
-
-      if (latestEvent) {
-        // Use what the last known state was at this point in time
-        status = latestEvent.type === 'router_online' ? 'online' : 'offline';
-      } else {
-        // blockTime is >= monitoringStart but before any known event
-        // The first event transitioning TO a state tells us what it was BEFORE
-        // e.g. first event = router_online means it came online then → was offline before
-        status = routerEvents[0].type === 'router_online' ? 'offline' : 'online';
-      }
+    for (let i = 1; i < routerEvents.length; i++) {
+      const e = routerEvents[i];
+      intervals.push({ start: lastTime, end: e.time, status: lastStatus });
+      lastTime = e.time;
+      lastStatus = e.type === 'router_online' ? 'online' : 'offline';
     }
 
-    if (status === 'online') onlineCount++;
-
-    const timeStr = blockDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const dateStr = blockDate.toLocaleDateString();
-    const tip = `${dateStr} ${timeStr} — Router: ${status.toUpperCase()}`;
-
-    blocksHtml.push(`<div class="uptime-block ${status}" title="${tip}"></div>`);
+    intervals.push({ start: lastTime, end: now, status: lastStatus });
   }
 
-  bar.innerHTML = blocksHtml.join('');
+  const { uptimePct, blocks } = calculateUptime(intervals, monitoringStart, now, windowMs, numBlocks);
 
-  const uptimePct = activeBlocks > 0
-    ? Math.round((onlineCount / activeBlocks) * 100)
-    : (currentRouterStatus === 'online' ? 100 : 0);
+  bar.innerHTML = blocks.map(b => {
+    const tip = `${b.tip} (Router)`;
+    return `<div class="uptime-block ${b.status}" title="${tip}"></div>`;
+  }).join('');
 
   pctLabel.textContent = `Uptime: ${uptimePct}%`;
   pctLabel.style.color = uptimePct > 90 ? 'var(--accent-green)' : uptimePct > 50 ? 'var(--accent-orange)' : 'var(--accent-red)';
@@ -996,7 +1047,6 @@ function renderDashboardUsers() {
   const now = Date.now();
   const numBlocks = 30;
   const windowMs = usersUptimeHours * 60 * 60 * 1000;
-  const blockDuration = windowMs / numBlocks;
 
   listContainer.innerHTML = sortedUsers.map(([username, user]) => {
     const isOnline = user.status === 'online';
@@ -1007,45 +1057,24 @@ function renderDashboardUsers() {
       ? Math.min(...userSessions.map(s => new Date(s.start).getTime())) 
       : Infinity;
 
-    let onlineCount = 0;
-    let activeBlocks = 0;
-    let blocksHtml = [];
+    // Construct user online intervals
+    const intervals = userSessions.map(s => ({
+      start: new Date(s.start).getTime(),
+      end: s.end ? new Date(s.end).getTime() : now,
+      status: 'online'
+    }));
 
-    // Calculate user timeline blocks
-    for (let i = 0; i < numBlocks; i++) {
-      const blockTime = now - (numBlocks - 1 - i) * blockDuration;
-      const blockDate = new Date(blockTime);
+    const { uptimePct, blocks } = calculateUptime(intervals, earliestStart, now, windowMs, numBlocks);
 
-      let blockStatus = 'offline';
-      if (blockTime < earliestStart) {
-        blockStatus = 'no-data';
-      } else {
-        activeBlocks++;
-        const isUserOnline = userSessions.some(s => {
-          const startMs = new Date(s.start).getTime();
-          const endMs = s.end ? new Date(s.end).getTime() : Infinity;
-          return startMs <= blockTime && endMs >= blockTime;
-        });
-
-        if (isUserOnline) {
-          blockStatus = 'online';
-          onlineCount++;
-        }
-      }
-
-      const timeString = blockDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const dateString = blockDate.toLocaleDateString();
-      const tooltipText = `${dateString} ${timeString} - ${username}: ${blockStatus.toUpperCase()}`;
-
-      blocksHtml.push(`
-        <div class="user-uptime-block ${blockStatus}" title="${tooltipText}"></div>
-      `);
-    }
-
-    // Calculate Uptime percentage based on active monitoring hours
-    const uptimePct = activeBlocks > 0 
-      ? Math.round((onlineCount / activeBlocks) * 100) 
-      : (isOnline ? 100 : 0);
+    const blocksHtml = blocks.map(b => {
+      const blockDate = new Date(b.time);
+      const timeStr = blockDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = blockDate.toLocaleDateString();
+      const tooltipText = b.status === 'no-data'
+        ? `${dateStr} ${timeStr} - ${username}: NO DATA`
+        : `${dateStr} ${timeStr} - ${username}: ${b.status.toUpperCase()} (${b.onlinePct}% Online)`;
+      return `<div class="user-uptime-block ${b.status}" title="${tooltipText}"></div>`;
+    }).join('');
 
     const pctColor = uptimePct > 90 
       ? 'var(--accent-green)' 

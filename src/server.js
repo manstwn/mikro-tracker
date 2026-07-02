@@ -115,6 +115,12 @@ function getDashboardPayload() {
   const traffic = db.read('traffic.json');
   const sessions = db.read('sessions.json');
 
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const recentSessions = sessions
+    .filter(s => s.end === null || new Date(s.end).getTime() >= thirtyDaysAgo)
+    .reverse()
+    .slice(0, 2000);
+
   return {
     router: db.read('router.json'),
     system: db.read('system.json'),
@@ -124,7 +130,7 @@ function getDashboardPayload() {
     alerts: alerts.slice(0, 100),
     logs: logs.slice(0, 100),
     traffic: traffic.slice(-120), // Last 120 datapoints (1 hour of 30s updates)
-    sessions: sessions.slice().reverse().slice(0, 100) // 100 latest sessions
+    sessions: recentSessions
   };
 }
 
