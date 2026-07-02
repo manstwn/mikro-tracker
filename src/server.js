@@ -138,6 +138,7 @@ function getDashboardPayload() {
 
   return {
     timestamp: new Date().toISOString(),
+    timestampMs: Date.now(),
     router: db.read('router.json'),
     system: db.read('system.json'),
     config: db.read('config.json'),

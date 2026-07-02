@@ -24,6 +24,21 @@ socket.on('connect_error', (err) => {
 // State caching
 let currentData = null;
 let serverTimeOffset = 0;
+
+function safeParseDate(dateVal) {
+  if (!dateVal) return NaN;
+  if (typeof dateVal === 'number') return dateVal;
+  let t = new Date(dateVal).getTime();
+  if (!isNaN(t)) return t;
+  if (typeof dateVal === 'string') {
+    t = Date.parse(dateVal);
+    if (!isNaN(t)) return t;
+    t = new Date(dateVal.replace(' ', 'T')).getTime();
+    if (!isNaN(t)) return t;
+  }
+  return NaN;
+}
+
 let selectedUsername = null;
 let trafficChart = null;
 let currentChartMinutes = 1; // Default chart view
@@ -338,12 +353,13 @@ function initChart() {
 function renderTrafficChart() {
   if (!trafficChart || !currentData || !currentData.traffic) return;
 
-  const nowMs = Date.now() - serverTimeOffset;
+  const clientNow = Date.now();
+  const nowMs = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
   const timeLimitMs = currentChartMinutes * 60 * 1000;
 
   // Filter traffic points within the range
   const filteredTraffic = currentData.traffic.filter(pt => {
-    const t = new Date(pt.time).getTime();
+    const t = safeParseDate(pt.time);
     return nowMs - t <= timeLimitMs;
   });
 
@@ -360,8 +376,11 @@ function renderTrafficChart() {
 // Receive Socket updates
 socket.on('update', (data) => {
   currentData = data;
-  if (data.timestamp) {
-    serverTimeOffset = Date.now() - new Date(data.timestamp).getTime();
+  if (data.timestampMs || data.timestamp) {
+    const serverMs = data.timestampMs || safeParseDate(data.timestamp);
+    if (!isNaN(serverMs)) {
+      serverTimeOffset = Date.now() - serverMs;
+    }
   }
   console.log('[Socket] Database update received:', data);
 
@@ -394,8 +413,11 @@ apiFetch('/api/status')
   .then(data => {
     if (!currentData) {
       currentData = data;
-      if (data.timestamp) {
-        serverTimeOffset = Date.now() - new Date(data.timestamp).getTime();
+      if (data.timestampMs || data.timestamp) {
+        const serverMs = data.timestampMs || safeParseDate(data.timestamp);
+        if (!isNaN(serverMs)) {
+          serverTimeOffset = Date.now() - serverMs;
+        }
       }
       if (!trafficChart) initChart();
       updateSidebarStatus();
@@ -493,8 +515,10 @@ function updateDashboardWidgets() {
   
   let delay = 0;
   if (lastWebhookTime) {
-    const now = Date.now() - serverTimeOffset;
-    delay = Math.round((now - new Date(lastWebhookTime).getTime()) / 1000);
+    const clientNow = Date.now();
+    const now = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
+    const parsedWebhookTime = safeParseDate(lastWebhookTime);
+    delay = !isNaN(parsedWebhookTime) ? Math.round((now - parsedWebhookTime) / 1000) : 0;
   }
   document.getElementById('web-delay').textContent = delay > 0 ? `${delay}s ago` : '0s';
 
@@ -565,8 +589,10 @@ function renderUsersTable() {
     if (isOnline) {
       const activeSession = userSessions.find(s => s.end === null);
       if (activeSession) {
-        const now = Date.now() - serverTimeOffset;
-        const dur = Math.round((now - new Date(activeSession.start).getTime()) / 1000);
+        const clientNow = Date.now();
+        const now = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
+        const parsedStart = safeParseDate(activeSession.start);
+        const dur = !isNaN(parsedStart) ? Math.round((now - parsedStart) / 1000) : 0;
         sessionText = formatDuration(dur);
       }
     } else if (userSessions.length > 0) {
@@ -989,7 +1015,8 @@ function renderUptimeBar() {
   if (!bar || !currentData || !currentData.router) return;
 
   const hours = routerUptimeHours;
-  const now = Date.now() - serverTimeOffset;
+  const clientNow = Date.now();
+  const now = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
   const windowMs = hours * 60 * 60 * 1000;
   const numBlocks = 40;
 
@@ -1000,7 +1027,8 @@ function renderUptimeBar() {
   // All router events, sorted oldest→newest
   const routerEvents = currentData.history
     .filter(e => e.type === 'router_online' || e.type === 'router_offline')
-    .map(e => ({ time: new Date(e.time).getTime(), type: e.type }))
+    .map(e => ({ time: safeParseDate(e.time), type: e.type }))
+    .filter(e => !isNaN(e.time))
     .sort((a, b) => a.time - b.time);
 
   // Earliest known event time (start of monitoring)
@@ -1073,14 +1101,15 @@ function renderDashboardUsers() {
     sortedUsers = users.sort((a, b) => a[0].localeCompare(b[0]));
   }
 
-  const now = Date.now() - serverTimeOffset;
+  const clientNow = Date.now();
+  const now = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
   const numBlocks = 30;
   const windowMs = usersUptimeHours * 60 * 60 * 1000;
 
   // Calculate overall system monitoring start time (earliest event in history)
   const systemEvents = currentData.history
     .filter(e => e && e.time)
-    .map(e => new Date(e.time).getTime())
+    .map(e => safeParseDate(e.time))
     .filter(t => !isNaN(t));
   const monitoringStart = systemEvents.length > 0 ? Math.min(...systemEvents) : now;
 
@@ -1091,7 +1120,7 @@ function renderDashboardUsers() {
     // Find user's first online session start time
     const validSessionTimes = userSessions
       .filter(s => s && s.start)
-      .map(s => new Date(s.start).getTime())
+      .map(s => safeParseDate(s.start))
       .filter(t => !isNaN(t));
     const userEarliestSession = validSessionTimes.length > 0 
       ? Math.min(...validSessionTimes) 
@@ -1104,8 +1133,8 @@ function renderDashboardUsers() {
     const intervals = userSessions
       .filter(s => s && s.start)
       .map(s => ({
-        start: new Date(s.start).getTime(),
-        end: s.end ? new Date(s.end).getTime() : now,
+        start: safeParseDate(s.start),
+        end: s.end ? safeParseDate(s.end) : now,
         status: 'online'
       }))
       .filter(inv => !isNaN(inv.start) && !isNaN(inv.end));
@@ -1135,11 +1164,13 @@ function renderDashboardUsers() {
     if (isOnline) {
       const activeSession = userSessions.find(s => s.end === null);
       if (activeSession) {
-        const dur = Math.round((now - new Date(activeSession.start).getTime()) / 1000);
+        const parsedStart = safeParseDate(activeSession.start);
+        const dur = !isNaN(parsedStart) ? Math.round((now - parsedStart) / 1000) : 0;
         timeText = `Online (${formatDuration(dur)})`;
       }
     } else if (user.lastOffline) {
-      const offlineSec = Math.round((now - new Date(user.lastOffline).getTime()) / 1000);
+      const parsedOffline = safeParseDate(user.lastOffline);
+      const offlineSec = !isNaN(parsedOffline) ? Math.round((now - parsedOffline) / 1000) : 0;
       timeText = `Offline (${formatDuration(offlineSec)} ago)`;
     }
 
