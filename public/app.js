@@ -1048,14 +1048,21 @@ function renderDashboardUsers() {
   const numBlocks = 30;
   const windowMs = usersUptimeHours * 60 * 60 * 1000;
 
+  // Calculate overall system monitoring start time (earliest event in history)
+  const systemEvents = currentData.history.map(e => new Date(e.time).getTime());
+  const monitoringStart = systemEvents.length > 0 ? Math.min(...systemEvents) : now;
+
   listContainer.innerHTML = sortedUsers.map(([username, user]) => {
     const isOnline = user.status === 'online';
     const userSessions = currentData.sessions.filter(s => s.user === username);
     
-    // Find earliest session start time to determine "no-data" vs "offline"
-    const earliestStart = userSessions.length > 0 
+    // Find user's first online session start time
+    const userEarliestSession = userSessions.length > 0 
       ? Math.min(...userSessions.map(s => new Date(s.start).getTime())) 
       : Infinity;
+
+    // Use minimum of system start and user's first session to define monitoring duration
+    const earliestStart = Math.min(monitoringStart, userEarliestSession);
 
     // Construct user online intervals
     const intervals = userSessions.map(s => ({
