@@ -1113,84 +1113,96 @@ function renderDashboardUsers() {
     .filter(t => !isNaN(t));
   const monitoringStart = systemEvents.length > 0 ? Math.min(...systemEvents) : now;
 
-  listContainer.innerHTML = sortedUsers.map(([username, user]) => {
-    const isOnline = user.status === 'online';
-    const userSessions = currentData.sessions ? currentData.sessions.filter(s => s && s.user === username) : [];
-    
-    // Find user's first online session start time
-    const validSessionTimes = userSessions
-      .filter(s => s && s.start)
-      .map(s => safeParseDate(s.start))
-      .filter(t => !isNaN(t));
-    const userEarliestSession = validSessionTimes.length > 0 
-      ? Math.min(...validSessionTimes) 
-      : Infinity;
+  try {
+    listContainer.innerHTML = sortedUsers.map(([username, user]) => {
+      const isOnline = user.status === 'online';
+      const userSessions = currentData.sessions ? currentData.sessions.filter(s => s && s.user === username) : [];
+      
+      // Find user's first online session start time
+      const validSessionTimes = userSessions
+        .filter(s => s && s.start)
+        .map(s => safeParseDate(s.start))
+        .filter(t => !isNaN(t));
+      const userEarliestSession = validSessionTimes.length > 0 
+        ? Math.min(...validSessionTimes) 
+        : Infinity;
 
-    // Use minimum of system start and user's first session to define monitoring duration
-    const earliestStart = Math.min(monitoringStart, userEarliestSession);
+      // Use minimum of system start and user's first session to define monitoring duration
+      const earliestStart = Math.min(monitoringStart, userEarliestSession);
 
-    // Construct user online intervals
-    const intervals = userSessions
-      .filter(s => s && s.start)
-      .map(s => ({
-        start: safeParseDate(s.start),
-        end: s.end ? safeParseDate(s.end) : now,
-        status: 'online'
-      }))
-      .filter(inv => !isNaN(inv.start) && !isNaN(inv.end));
+      // Construct user online intervals
+      const intervals = userSessions
+        .filter(s => s && s.start)
+        .map(s => ({
+          start: safeParseDate(s.start),
+          end: s.end ? safeParseDate(s.end) : now,
+          status: 'online'
+        }))
+        .filter(inv => !isNaN(inv.start) && !isNaN(inv.end));
 
-    const { uptimePct, blocks } = calculateUptime(intervals, earliestStart, now, windowMs, numBlocks);
+      const { uptimePct, blocks } = calculateUptime(intervals, earliestStart, now, windowMs, numBlocks);
 
-    const blocksHtml = blocks.map(b => {
-      const blockDate = new Date(b.time);
-      const timeStr = blockDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const dateStr = blockDate.toLocaleDateString();
-      const tooltipText = b.status === 'no-data'
-        ? `${dateStr} ${timeStr} - ${username}: NO DATA`
-        : `${dateStr} ${timeStr} - ${username}: ${b.status.toUpperCase()} (${b.onlinePct}% Online)`;
-      return `<div class="user-uptime-block ${b.status}" title="${tooltipText}"></div>`;
-    }).join('');
+      const blocksHtml = blocks.map(b => {
+        const blockDate = new Date(b.time);
+        const timeStr = blockDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateStr = blockDate.toLocaleDateString();
+        const tooltipText = b.status === 'no-data'
+          ? `${dateStr} ${timeStr} - ${username}: NO DATA`
+          : `${dateStr} ${timeStr} - ${username}: ${b.status.toUpperCase()} (${b.onlinePct}% Online)`;
+        return `<div class="user-uptime-block ${b.status}" title="${tooltipText}"></div>`;
+      }).join('');
 
-    const pctColor = uptimePct > 90 
-      ? 'var(--accent-green)' 
-      : uptimePct > 50 ? 'var(--accent-orange)' : 'var(--accent-red)';
+      const pctColor = uptimePct > 90 
+        ? 'var(--accent-green)' 
+        : uptimePct > 50 ? 'var(--accent-orange)' : 'var(--accent-red)';
 
-    const rowClass = isOnline ? 'online' : 'offline';
-    const dotClass = isOnline ? 'online' : '';
-    const statusTxt = isOnline ? 'Online' : 'Offline';
+      const rowClass = isOnline ? 'online' : 'offline';
+      const dotClass = isOnline ? 'online' : '';
+      const statusTxt = isOnline ? 'Online' : 'Offline';
 
-    // Status session duration text
-    let timeText = 'Offline';
-    if (isOnline) {
-      const activeSession = userSessions.find(s => s.end === null);
-      if (activeSession) {
-        const parsedStart = safeParseDate(activeSession.start);
-        const dur = !isNaN(parsedStart) ? Math.round((now - parsedStart) / 1000) : 0;
-        timeText = `Online (${formatDuration(dur)})`;
+      // Status session duration text
+      let timeText = 'Offline';
+      if (isOnline) {
+        const activeSession = userSessions.find(s => s.end === null);
+        if (activeSession) {
+          const parsedStart = safeParseDate(activeSession.start);
+          const dur = !isNaN(parsedStart) ? Math.round((now - parsedStart) / 1000) : 0;
+          timeText = `Online (${formatDuration(dur)})`;
+        }
+      } else if (user.lastOffline) {
+        const parsedOffline = safeParseDate(user.lastOffline);
+        const offlineSec = !isNaN(parsedOffline) ? Math.round((now - parsedOffline) / 1000) : 0;
+        timeText = `Offline (${formatDuration(offlineSec)} ago)`;
       }
-    } else if (user.lastOffline) {
-      const parsedOffline = safeParseDate(user.lastOffline);
-      const offlineSec = !isNaN(parsedOffline) ? Math.round((now - parsedOffline) / 1000) : 0;
-      timeText = `Offline (${formatDuration(offlineSec)} ago)`;
-    }
 
-    return `
-      <div class="user-uptime-row ${rowClass}" onclick="navigateToUser('${username}')">
-        <div class="user-uptime-meta">
-          <span class="user-uptime-dot ${dotClass}"></span>
-          <span class="user-uptime-name">${username}</span>
-          <span class="user-uptime-status-txt">(${statusTxt})</span>
-          <span class="user-uptime-pct" style="color: ${pctColor}">Uptime: ${uptimePct}%</span>
-        </div>
-        <div class="user-uptime-bar-container">
-          <div class="user-uptime-bar">
-            ${blocksHtml.join('')}
+      return `
+        <div class="user-uptime-row ${rowClass}" onclick="navigateToUser('${username}')">
+          <div class="user-uptime-meta">
+            <span class="user-uptime-dot ${dotClass}"></span>
+            <span class="user-uptime-name">${username}</span>
+            <span class="user-uptime-status-txt">(${statusTxt})</span>
+            <span class="user-uptime-pct" style="color: ${pctColor}">Uptime: ${uptimePct}%</span>
           </div>
-          <span class="user-uptime-time ${rowClass}">${timeText}</span>
+          <div class="user-uptime-bar-container">
+            <div class="user-uptime-bar">
+              ${blocksHtml}
+            </div>
+            <span class="user-uptime-time ${rowClass}">${timeText}</span>
+          </div>
         </div>
+      `;
+    }).join('');
+  } catch (err) {
+    listContainer.innerHTML = `
+      <div class="timeline-empty" style="color: var(--accent-red); padding: 20px; text-align: left; font-family: monospace; white-space: pre-wrap; font-size: 12px; border: 1px dashed var(--accent-red); border-radius: 8px; background: rgba(255, 23, 68, 0.05);">
+        <strong>Rendering Error:</strong> ${err.message}
+        <br><br>
+        <strong>Stack Trace:</strong>
+        ${err.stack}
       </div>
     `;
-  }).join('');
+    console.error('Error rendering dashboard users list:', err);
+  }
 }
 
 // Navigation Helper from Dashboard card to Users tab with selection
