@@ -74,7 +74,16 @@ function shouldRedirectToPin(path) {
 export function authMiddleware(req, res, next) {
   if (!PIN_ENABLED) return next();
   if (isPublicPath(req.path)) return next();
-  if (isValidSession(getSessionToken(req))) return next();
+
+  let token = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  } else {
+    token = getSessionToken(req);
+  }
+
+  if (isValidSession(token)) return next();
 
   if (req.path.startsWith('/api/')) {
     return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -89,7 +98,7 @@ export function authMiddleware(req, res, next) {
 
 export function socketAuthMiddleware(socket, next) {
   if (!PIN_ENABLED) return next();
-  const token = parseCookies(socket.handshake.headers.cookie)[COOKIE_NAME];
+  const token = socket.handshake.auth?.token || parseCookies(socket.handshake.headers.cookie)[COOKIE_NAME];
   if (isValidSession(token)) return next();
   next(new Error('Unauthorized'));
 }

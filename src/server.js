@@ -49,7 +49,7 @@ app.post('/api/auth/pin', (req, res) => {
 
   const token = auth.createSession();
   res.setHeader('Set-Cookie', auth.buildSessionCookie(token));
-  res.json({ success: true });
+  res.json({ success: true, token });
 });
 
 app.get('/api/auth/check', (req, res) => {
@@ -57,7 +57,15 @@ app.get('/api/auth/check', (req, res) => {
     return res.json({ authenticated: true, pinRequired: false });
   }
 
-  if (auth.isValidSession(auth.getSessionToken(req))) {
+  let token = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  } else {
+    token = auth.getSessionToken(req);
+  }
+
+  if (auth.isValidSession(token)) {
     return res.json({ authenticated: true, pinRequired: true });
   }
 
@@ -65,7 +73,14 @@ app.get('/api/auth/check', (req, res) => {
 });
 
 app.post('/api/auth/logout', (req, res) => {
-  auth.destroySession(auth.getSessionToken(req));
+  let token = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
+  } else {
+    token = auth.getSessionToken(req);
+  }
+  auth.destroySession(token);
   res.setHeader('Set-Cookie', auth.clearSessionCookie());
   res.json({ success: true });
 });
@@ -122,6 +137,7 @@ function getDashboardPayload() {
     .slice(0, 2000);
 
   return {
+    timestamp: new Date().toISOString(),
     router: db.read('router.json'),
     system: db.read('system.json'),
     config: db.read('config.json'),

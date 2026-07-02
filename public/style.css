@@ -1682,6 +1682,15 @@ button, input, select, textarea {
 
   .user-uptime-bar-container {
     width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .user-uptime-time {
+    min-width: auto;
+    text-align: left;
+    margin-top: 2px;
   }
 
   /* Settings form: single column */

@@ -1,4 +1,19 @@
-const socket = io();
+const socket = io({
+  auth: {
+    token: localStorage.getItem('mm_token')
+  }
+});
+
+function apiFetch(url, options = {}) {
+  const token = localStorage.getItem('mm_token');
+  if (token) {
+    options.headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`
+    };
+  }
+  return fetch(url, options);
+}
 
 socket.on('connect_error', (err) => {
   if (err.message === 'Unauthorized') {
@@ -8,6 +23,7 @@ socket.on('connect_error', (err) => {
 
 // State caching
 let currentData = null;
+let serverTimeOffset = 0;
 let selectedUsername = null;
 let trafficChart = null;
 let currentChartMinutes = 1; // Default chart view
@@ -204,7 +220,7 @@ runningBtn.addEventListener('click', () => setSystemMode('RUNNING'));
 pauseBtn.addEventListener('click', () => setSystemMode('PAUSE'));
 
 function setSystemMode(mode) {
-  fetch('/api/system/mode', {
+  apiFetch('/api/system/mode', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mode })
@@ -322,7 +338,7 @@ function initChart() {
 function renderTrafficChart() {
   if (!trafficChart || !currentData || !currentData.traffic) return;
 
-  const nowMs = Date.now();
+  const nowMs = Date.now() - serverTimeOffset;
   const timeLimitMs = currentChartMinutes * 60 * 1000;
 
   // Filter traffic points within the range
@@ -344,6 +360,9 @@ function renderTrafficChart() {
 // Receive Socket updates
 socket.on('update', (data) => {
   currentData = data;
+  if (data.timestamp) {
+    serverTimeOffset = Date.now() - new Date(data.timestamp).getTime();
+  }
   console.log('[Socket] Database update received:', data);
 
   // Initialize chart if needed
@@ -370,11 +389,14 @@ socket.on('update', (data) => {
 
 // Bootstrap: fetch initial data immediately via HTTP so bars show
 // without waiting for a Socket.IO push event
-fetch('/api/status')
+apiFetch('/api/status')
   .then(r => r.json())
   .then(data => {
     if (!currentData) {
       currentData = data;
+      if (data.timestamp) {
+        serverTimeOffset = Date.now() - new Date(data.timestamp).getTime();
+      }
       if (!trafficChart) initChart();
       updateSidebarStatus();
       updateSystemModeButtons(data.system.mode);
@@ -471,7 +493,8 @@ function updateDashboardWidgets() {
   
   let delay = 0;
   if (lastWebhookTime) {
-    delay = Math.round((Date.now() - new Date(lastWebhookTime).getTime()) / 1000);
+    const now = Date.now() - serverTimeOffset;
+    delay = Math.round((now - new Date(lastWebhookTime).getTime()) / 1000);
   }
   document.getElementById('web-delay').textContent = delay > 0 ? `${delay}s ago` : '0s';
 
@@ -542,7 +565,8 @@ function renderUsersTable() {
     if (isOnline) {
       const activeSession = userSessions.find(s => s.end === null);
       if (activeSession) {
-        const dur = Math.round((Date.now() - new Date(activeSession.start).getTime()) / 1000);
+        const now = Date.now() - serverTimeOffset;
+        const dur = Math.round((now - new Date(activeSession.start).getTime()) / 1000);
         sessionText = formatDuration(dur);
       }
     } else if (userSessions.length > 0) {
@@ -792,7 +816,7 @@ document.getElementById('settings-form').addEventListener('submit', (e) => {
   saveBtn.disabled = true;
   saveBtn.textContent = 'Saving Configurations...';
 
-  fetch('/api/settings', {
+  apiFetch('/api/settings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -825,7 +849,7 @@ document.getElementById('factory-reset-btn').addEventListener('click', () => {
   resetBtn.disabled = true;
   resetBtn.textContent = 'Resetting Database...';
 
-  fetch('/api/system/reset', {
+  apiFetch('/api/system/reset', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   })
@@ -965,7 +989,7 @@ function renderUptimeBar() {
   if (!bar || !currentData || !currentData.router) return;
 
   const hours = routerUptimeHours;
-  const now = Date.now();
+  const now = Date.now() - serverTimeOffset;
   const windowMs = hours * 60 * 60 * 1000;
   const numBlocks = 40;
 
@@ -1014,7 +1038,7 @@ function renderUptimeBar() {
 
 // Helper: human-readable range label for axis (relative + actual time)
 function formatRangeLabel(hours) {
-  const t = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const t = new Date((Date.now() - serverTimeOffset) - hours * 60 * 60 * 1000);
   const timeStr = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   if (hours >= 720) return `30d ago (${t.toLocaleDateString()})`;
   if (hours >= 168) return `7d ago (${t.toLocaleDateString()})`;
@@ -1044,7 +1068,7 @@ function renderDashboardUsers() {
   // Sort purely alphabetically (0-9 → a-z) regardless of status
   const sortedUsers = users.sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' }));
 
-  const now = Date.now();
+  const now = Date.now() - serverTimeOffset;
   const numBlocks = 30;
   const windowMs = usersUptimeHours * 60 * 60 * 1000;
 

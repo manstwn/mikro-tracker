@@ -151,7 +151,10 @@
     const card = document.getElementById('pin-card');
     const submitBtn = document.getElementById('pin-submit');
 
-    fetch('/api/auth/check')
+    const token = localStorage.getItem('mm_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+    fetch('/api/auth/check', { headers })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data && data.authenticated) window.location.replace('/');
@@ -172,6 +175,9 @@
         const data = await res.json();
 
         if (res.ok && data.success) {
+          if (data.token) {
+            localStorage.setItem('mm_token', data.token);
+          }
           window.location.replace('/');
           return;
         }
