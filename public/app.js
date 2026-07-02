@@ -248,15 +248,15 @@ function setSystemMode(mode) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mode })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      updateSystemModeButtons(data.mode);
-    } else {
-      alert('Failed to change system mode: ' + data.error);
-    }
-  })
-  .catch(err => console.error('Error changing system mode:', err));
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        updateSystemModeButtons(data.mode);
+      } else {
+        alert('Failed to change system mode: ' + data.error);
+      }
+    })
+    .catch(err => console.error('Error changing system mode:', err));
 }
 
 function updateSystemModeButtons(mode) {
@@ -282,7 +282,7 @@ chartOptButtons.forEach(btn => {
 
 function initChart() {
   const ctx = document.getElementById('trafficChart').getContext('2d');
-  
+
   // Create gradient glows
   const rxGradient = ctx.createLinearGradient(0, 0, 0, 400);
   rxGradient.addColorStop(0, 'rgba(0, 230, 118, 0.25)');
@@ -332,7 +332,7 @@ function initChart() {
           mode: 'index',
           intersect: false,
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' Mbps';
             }
           }
@@ -348,7 +348,7 @@ function initChart() {
           ticks: {
             color: '#8b9bb4',
             font: { family: 'Inter', size: 10 },
-            callback: function(value) {
+            callback: function (value) {
               return value.toFixed(2) + ' Mbps';
             }
           }
@@ -444,7 +444,7 @@ apiFetch('/api/status')
       renderSystemLogs();
     }
   })
-  .catch(() => {}); // ignore if not available, socket will cover it
+  .catch(() => { }); // ignore if not available, socket will cover it
 
 
 
@@ -478,7 +478,7 @@ function updateDashboardWidgets() {
     if (capacity > 0) {
       const rxMbps = (router.rxSpeed * 8) / 1000000;
       const pct = Math.round((rxMbps / capacity) * 100);
-      rTxt.textContent = `ONLINE (${pct}% Capacity)`;
+      rTxt.innerHTML = `ONLINE<br><span style="font-size: 11px; font-weight: 500; opacity: 0.7; text-transform: none; display: block; margin-top: 2px;">(Bandwidth Usage ${pct}%)</span>`;
     } else {
       rTxt.textContent = 'ONLINE';
     }
@@ -533,7 +533,7 @@ function updateDashboardWidgets() {
   // Webhook stats widget
   const lastWebhookTime = router.lastSeen;
   document.getElementById('web-last-time').textContent = lastWebhookTime ? formatDateTime(lastWebhookTime) : 'Never';
-  
+
   let delay = 0;
   if (lastWebhookTime) {
     const clientNow = Date.now();
@@ -603,7 +603,7 @@ function renderUsersTable() {
     const statusPill = isOnline
       ? '<span class="status-pill online"><span class="status-circle"></span>Online</span>'
       : '<span class="status-pill offline"><span class="status-circle"></span>Offline</span>';
-    
+
     // Find current active session or last session
     const userSessions = currentData.sessions.filter(s => s.user === username);
     let sessionText = '-';
@@ -641,34 +641,34 @@ function renderUsersTable() {
 }
 
 // User selection handler
-window.selectUser = function(username) {
+window.selectUser = function (username) {
   selectedUsername = username;
   renderUsersTable(); // Redraw selection class
   renderUserDetailPanel();
 };
 
-window.deleteUser = function(username) {
+window.deleteUser = function (username) {
   const confirmed = confirm(`Are you sure you want to remove user "${username}" from monitoring? This will delete all of their session history.`);
   if (!confirmed) return;
 
   apiFetch(`/api/users/${username}`, {
     method: 'DELETE'
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert(`User "${username}" successfully deleted.`);
-      if (selectedUsername === username) {
-        selectedUsername = null;
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(`User "${username}" successfully deleted.`);
+        if (selectedUsername === username) {
+          selectedUsername = null;
+        }
+      } else {
+        alert(`Failed to delete user: ${data.error}`);
       }
-    } else {
-      alert(`Failed to delete user: ${data.error}`);
-    }
-  })
-  .catch(err => {
-    console.error('Error deleting user:', err);
-    alert('Error deleting user: ' + err.message);
-  });
+    })
+    .catch(err => {
+      console.error('Error deleting user:', err);
+      alert('Error deleting user: ' + err.message);
+    });
 };
 
 // Render Selected User Details Panel
@@ -688,7 +688,7 @@ function renderUserDetailPanel() {
   const username = selectedUsername;
   const user = currentData.users[username];
   const isOnline = user.status === 'online';
-  
+
   // Header details
   document.getElementById('detail-avatar').textContent = username.substring(0, 2).toUpperCase();
   document.getElementById('detail-username').textContent = username;
@@ -702,7 +702,7 @@ function renderUserDetailPanel() {
 
   let totalOnlineSec = user.totalOnline || 0;
   let loginCount = user.loginCount || 0;
-  
+
   let avgSec = 0;
   let maxSec = 0;
   let minSec = Infinity;
@@ -735,7 +735,7 @@ function renderUserDetailPanel() {
   listContainer.innerHTML = userSessions.map(s => {
     const isSessionActive = s.end === null;
     const durStr = isSessionActive ? 'Active' : formatDuration(s.duration);
-    
+
     return `
       <div class="session-item">
         <div class="session-times">
@@ -781,7 +781,7 @@ function renderFullTimeline() {
   container.innerHTML = history.map(item => {
     let title = '';
     let body = '';
-    
+
     if (item.type === 'router_online') {
       title = 'Router Restored';
       body = 'The monitoring server received a valid webhook from the router.';
@@ -845,7 +845,7 @@ function renderAlertsTable() {
 // Populate settings forms
 function populateSettingsForm() {
   const config = currentData.config;
-  
+
   // Set values only if the user isn't currently editing (focus check to prevent UI jump)
   if (document.activeElement.id !== 'set-secret-key') {
     document.getElementById('set-secret-key').value = config.secretKey || '';
@@ -871,14 +871,14 @@ function populateSettingsForm() {
   if (document.activeElement.id !== 'set-speed-capacity') {
     document.getElementById('set-speed-capacity').value = config.speedCapacity || 50;
   }
-  
+
   document.getElementById('set-auto-backup').checked = !!config.autoBackup;
 }
 
 // Save Settings Form
 document.getElementById('settings-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  
+
   const payload = {
     secretKey: document.getElementById('set-secret-key').value,
     webhookInterval: parseInt(document.getElementById('set-webhook-interval').value, 10),
@@ -900,20 +900,20 @@ document.getElementById('settings-form').addEventListener('submit', (e) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-  .then(res => res.json())
-  .then(data => {
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Configurations';
-    if (data.success) {
-      alert('Configurations saved successfully!');
-    }
-  })
-  .catch(err => {
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Configurations';
-    console.error('Error saving settings:', err);
-    alert('Failed to save settings: ' + err.message);
-  });
+    .then(res => res.json())
+    .then(data => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Configurations';
+      if (data.success) {
+        alert('Configurations saved successfully!');
+      }
+    })
+    .catch(err => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Configurations';
+      console.error('Error saving settings:', err);
+      alert('Failed to save settings: ' + err.message);
+    });
 });
 
 // Factory Reset Button Click Handler
@@ -932,30 +932,30 @@ document.getElementById('factory-reset-btn').addEventListener('click', () => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   })
-  .then(res => res.json())
-  .then(data => {
-    resetBtn.disabled = false;
-    resetBtn.textContent = 'Reset All Monitoring Data';
-    if (data.success) {
-      alert('The database has been fully reset successfully!');
-      // Reset local selection state
-      selectedUsername = null;
-      // Navigate to dashboard
-      const dashBtn = Array.from(document.querySelectorAll('.sidebar-menu .menu-btn'))
-        .find(btn => btn.getAttribute('data-target') === 'dashboard-section');
-      if (dashBtn) {
-        dashBtn.click();
+    .then(res => res.json())
+    .then(data => {
+      resetBtn.disabled = false;
+      resetBtn.textContent = 'Reset All Monitoring Data';
+      if (data.success) {
+        alert('The database has been fully reset successfully!');
+        // Reset local selection state
+        selectedUsername = null;
+        // Navigate to dashboard
+        const dashBtn = Array.from(document.querySelectorAll('.sidebar-menu .menu-btn'))
+          .find(btn => btn.getAttribute('data-target') === 'dashboard-section');
+        if (dashBtn) {
+          dashBtn.click();
+        }
+      } else {
+        alert('Failed to reset database.');
       }
-    } else {
-      alert('Failed to reset database.');
-    }
-  })
-  .catch(err => {
-    resetBtn.disabled = false;
-    resetBtn.textContent = 'Reset All Monitoring Data';
-    console.error('Error resetting database:', err);
-    alert('Failed to reset database: ' + err.message);
-  });
+    })
+    .catch(err => {
+      resetBtn.disabled = false;
+      resetBtn.textContent = 'Reset All Monitoring Data';
+      console.error('Error resetting database:', err);
+      alert('Failed to reset database: ' + err.message);
+    });
 });
 
 
@@ -1170,14 +1170,14 @@ function renderDashboardUsers() {
     listContainer.innerHTML = sortedUsers.map(([username, user]) => {
       const isOnline = user.status === 'online';
       const userSessions = currentData.sessions ? currentData.sessions.filter(s => s && s.user === username) : [];
-      
+
       // Find user's first online session start time
       const validSessionTimes = userSessions
         .filter(s => s && s.start)
         .map(s => safeParseDate(s.start))
         .filter(t => !isNaN(t));
-      const userEarliestSession = validSessionTimes.length > 0 
-        ? Math.min(...validSessionTimes) 
+      const userEarliestSession = validSessionTimes.length > 0
+        ? Math.min(...validSessionTimes)
         : Infinity;
 
       // Use minimum of system start and user's first session to define monitoring duration
@@ -1205,8 +1205,8 @@ function renderDashboardUsers() {
         return `<div class="user-uptime-block ${b.status}" title="${tooltipText}"></div>`;
       }).join('');
 
-      const pctColor = uptimePct > 90 
-        ? 'var(--accent-green)' 
+      const pctColor = uptimePct > 90
+        ? 'var(--accent-green)'
         : uptimePct > 50 ? 'var(--accent-orange)' : 'var(--accent-red)';
 
       const rowClass = isOnline ? 'online' : 'offline';
@@ -1259,7 +1259,7 @@ function renderDashboardUsers() {
 }
 
 // Navigation Helper from Dashboard card to Users tab with selection
-window.navigateToUser = function(username) {
+window.navigateToUser = function (username) {
   const usersBtn = Array.from(document.querySelectorAll('.sidebar-menu .menu-btn'))
     .find(btn => btn.getAttribute('data-target') === 'users-section');
   if (usersBtn) {
