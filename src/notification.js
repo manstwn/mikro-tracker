@@ -1,71 +1,6 @@
-import https from 'https';
-import http from 'http';
 import * as db from './db.js';
 
 const cooldownTracker = new Map();
-
-function parseHeaders(raw) {
-  try {
-    const parsed = JSON.parse(raw || '{}');
-    return typeof parsed === 'object' && parsed !== null ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function sendPost(url, headers, payload) {
-  return new Promise((resolve) => {
-    try {
-      const data = JSON.stringify(payload);
-      const urlObj = new URL(url);
-      const isHttps = urlObj.protocol === 'https:';
-      const lib = isHttps ? https : http;
-
-      const port = urlObj.port || (isHttps ? 443 : 80);
-
-      const options = {
-        hostname: urlObj.hostname,
-        port,
-        path: urlObj.pathname + urlObj.search,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(data),
-          'User-Agent': 'MicroMonitor/2.0',
-          ...headers
-        },
-        timeout: 15000,
-        rejectUnauthorized: false
-      };
-
-      const req = lib.request(options, (res) => {
-        let body = '';
-        res.on('data', (chunk) => { body += chunk; });
-        res.on('end', () => resolve({ status: res.statusCode, body }));
-      });
-
-      req.on('error', (err) => resolve({ status: 0, error: err.message }));
-      req.on('timeout', () => { req.destroy(); resolve({ status: 0, error: 'timeout' }); });
-
-      req.write(data);
-      req.end();
-    } catch (err) {
-      resolve({ status: 0, error: err.message });
-    }
-  });
-}
-
-function isOnCooldown(eventKey) {
-  const config = db.read('config.json');
-  const cooldownMs = (config.notificationCooldown || 300) * 1000;
-  const lastSent = cooldownTracker.get(eventKey);
-  if (lastSent && (Date.now() - lastSent < cooldownMs)) return true;
-  return false;
-}
-
-function markSent(eventKey) {
-  cooldownTracker.set(eventKey, Date.now());
-}
 
 export async function dispatchEvent(eventType, details = {}) {
   const config = db.read('config.json');
@@ -115,17 +50,55 @@ export async function dispatchEvent(eventType, details = {}) {
     ...details
   };
 
-  const result = await sendPost(url, headers, payload);
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'MicroMonitor/2.0',
+        ...headers
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15000)
+    });
 
-  if (result.status >= 200 && result.status < 300) {
-    markSent(eventKey);
-    db.addLog('Notification Sent', `Event "${eventType}" sent to ${url} (${result.status})`);
-    return { sent: true, status: result.status, body: result.body };
+    if (response.ok) {
+      markSent(eventKey);
+      const body = await response.text();
+      db.addLog('Notification Sent', `Event "${eventType}" sent to ${url} (${response.status})`);
+      return { sent: true, status: response.status, body };
+    }
+
+    const body = await response.text();
+    const errMsg = `HTTP ${response.status}`;
+    db.addLog('Notification Failed', `Event "${eventType}" to ${url} - ${errMsg}`);
+    return { sent: false, error: errMsg, status: response.status, body };
+  } catch (err) {
+    const errMsg = err.name === 'TimeoutError' ? 'timeout' : err.message;
+    db.addLog('Notification Failed', `Event "${eventType}" to ${url} - ${errMsg}`);
+    return { sent: false, error: errMsg };
   }
+}
 
-  const errMsg = result.error || `HTTP ${result.status}`;
-  db.addLog('Notification Failed', `Event "${eventType}" to ${url} - ${errMsg}`);
-  return { sent: false, error: errMsg, status: result.status };
+function parseHeaders(raw) {
+  try {
+    const parsed = JSON.parse(raw || '{}');
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function isOnCooldown(eventKey) {
+  const config = db.read('config.json');
+  const cooldownMs = (config.notificationCooldown || 300) * 1000;
+  const lastSent = cooldownTracker.get(eventKey);
+  if (lastSent && (Date.now() - lastSent < cooldownMs)) return true;
+  return false;
+}
+
+function markSent(eventKey) {
+  cooldownTracker.set(eventKey, Date.now());
 }
 
 export async function checkUserOfflineNotifications() {
