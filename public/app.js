@@ -760,7 +760,7 @@ function renderRouterDiagnostics() {
   document.getElementById('r-details-txspeed').textContent = formatMbps(router.txSpeed);
 
   // Example integration link
-  const origin = window.location.origin;
+  const origin = currentData.config.publicUrl || window.location.origin;
   const key = currentData.config.secretKey || 'thiskey219Kx';
   const routerName = router.name || 'Router';
   const url = `${origin}/webhook/router1?key=${key}&router=${routerName}&rx=0&tx=0&users=user1;user2;`;

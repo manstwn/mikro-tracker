@@ -26,7 +26,8 @@ const io = new Server(httpServer, {
 
 io.use(auth.socketAuthMiddleware);
 
-const PORT = 2041;
+const PORT = parseInt(process.env.PORT, 10) || 2041;
+const PUBLIC_URL = process.env.PUBLIC_URL || '';
 const startTime = Date.now();
 
 // Server internal metrics
@@ -142,7 +143,7 @@ function getDashboardPayload() {
     timestampMs: Date.now(),
     router: db.read('router.json'),
     system: db.read('system.json'),
-    config: db.read('config.json'),
+    config: { ...db.read('config.json'), publicUrl: PUBLIC_URL },
     users: db.read('users.json'),
     history: history.slice(0, 100), // Limit to 100 for performance
     alerts: alerts.slice(0, 100),
