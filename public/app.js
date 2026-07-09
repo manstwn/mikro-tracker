@@ -219,14 +219,13 @@ function setupRangePills(containerId, onSelect) {
   }
 }
 
-setupRangePills('router-uptime-range', (hours) => {
+setupRangePills('merged-uptime-range', (hours) => {
   routerUptimeHours = hours;
-  if (currentData) renderUptimeBar();
-});
-
-setupRangePills('users-uptime-range', (hours) => {
   usersUptimeHours = hours;
-  if (currentData) renderDashboardUsers();
+  if (currentData) {
+    renderUptimeBar();
+    renderDashboardUsers();
+  }
 });
 
 // Search filter in PPPoE Users Table
@@ -846,6 +845,9 @@ function renderAlertsTable() {
 function populateSettingsForm() {
   const config = currentData.config;
 
+  // Populate Notification Settings
+  populateNotificationForm(config);
+
   // Set values only if the user isn't currently editing (focus check to prevent UI jump)
   if (document.activeElement.id !== 'set-secret-key') {
     document.getElementById('set-secret-key').value = config.secretKey || '';
@@ -1257,6 +1259,88 @@ function renderDashboardUsers() {
     console.error('Error rendering dashboard users list:', err);
   }
 }
+
+// Populate Notification Form
+function populateNotificationForm(config) {
+  if (document.activeElement.id !== 'notif-endpoint') {
+    document.getElementById('notif-endpoint').value = config.notificationEndpoint || '';
+  }
+  document.getElementById('notif-headers').value = config.notificationHeaders || '{}';
+  document.getElementById('notif-user-offline-timeout').value = config.notificationUserOfflineTimeout || 2;
+  document.getElementById('notif-cooldown').value = config.notificationCooldown || 300;
+  document.getElementById('notif-enabled').checked = !!config.notificationEnabled;
+  document.getElementById('notif-on-user-offline').checked = config.notifyOnUserOffline !== false;
+  document.getElementById('notif-on-user-online').checked = !!config.notifyOnUserOnline;
+  document.getElementById('notif-on-router-offline').checked = config.notifyOnRouterOffline !== false;
+  document.getElementById('notif-on-router-online').checked = !!config.notifyOnRouterOnline;
+  document.getElementById('notif-on-webhook-lost').checked = config.notifyOnWebhookLost !== false;
+}
+
+// Save Notification Form
+document.getElementById('notification-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const payload = {
+    notificationEndpoint: document.getElementById('notif-endpoint').value.trim(),
+    notificationHeaders: document.getElementById('notif-headers').value.trim() || '{}',
+    notificationUserOfflineTimeout: parseInt(document.getElementById('notif-user-offline-timeout').value, 10) || 2,
+    notificationCooldown: parseInt(document.getElementById('notif-cooldown').value, 10) || 300,
+    notificationEnabled: document.getElementById('notif-enabled').checked,
+    notifyOnUserOffline: document.getElementById('notif-on-user-offline').checked,
+    notifyOnUserOnline: document.getElementById('notif-on-user-online').checked,
+    notifyOnRouterOffline: document.getElementById('notif-on-router-offline').checked,
+    notifyOnRouterOnline: document.getElementById('notif-on-router-online').checked,
+    notifyOnWebhookLost: document.getElementById('notif-on-webhook-lost').checked
+  };
+
+  const saveBtn = document.getElementById('save-notif-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
+  apiFetch('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(data => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Notification Settings';
+      if (data.success) {
+        alert('Notification settings saved successfully!');
+      }
+    })
+    .catch(err => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Notification Settings';
+      console.error('Error saving notification settings:', err);
+      alert('Failed to save notification settings: ' + err.message);
+    });
+});
+
+// Test Notification Button
+document.getElementById('test-notif-btn').addEventListener('click', () => {
+  const btn = document.getElementById('test-notif-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  apiFetch('/api/notification/test', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Send Test Notification';
+      if (data.success) {
+        alert('Test notification sent successfully! Check your endpoint.');
+      } else {
+        alert('Test notification failed: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = 'Send Test Notification';
+      alert('Failed to send test notification: ' + err.message);
+    });
+});
 
 // Navigation Helper from Dashboard card to Users tab with selection
 window.navigateToUser = function (username) {

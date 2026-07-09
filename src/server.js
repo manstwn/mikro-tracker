@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import * as db from './db.js';
 import * as monitor from './monitor.js';
 import * as auth from './auth.js';
+import { resetCooldowns, dispatchEvent } from './notification.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -214,6 +215,18 @@ app.post('/api/settings', (req, res) => {
   updated.speedCapacity = parseInt(updated.speedCapacity, 10) || 50;
   updated.autoSave = req.body.autoSave !== undefined ? !!req.body.autoSave : currentConfig.autoSave;
   updated.autoBackup = req.body.autoBackup !== undefined ? !!req.body.autoBackup : currentConfig.autoBackup;
+
+  // Notification settings
+  if (req.body.notificationEndpoint !== undefined) updated.notificationEndpoint = req.body.notificationEndpoint;
+  if (req.body.notificationHeaders !== undefined) updated.notificationHeaders = req.body.notificationHeaders;
+  if (req.body.notificationUserOfflineTimeout !== undefined) updated.notificationUserOfflineTimeout = parseInt(req.body.notificationUserOfflineTimeout, 10) || 2;
+  if (req.body.notificationCooldown !== undefined) updated.notificationCooldown = parseInt(req.body.notificationCooldown, 10) || 300;
+  if (req.body.notificationEnabled !== undefined) updated.notificationEnabled = !!req.body.notificationEnabled;
+  if (req.body.notifyOnUserOffline !== undefined) updated.notifyOnUserOffline = !!req.body.notifyOnUserOffline;
+  if (req.body.notifyOnUserOnline !== undefined) updated.notifyOnUserOnline = !!req.body.notifyOnUserOnline;
+  if (req.body.notifyOnRouterOffline !== undefined) updated.notifyOnRouterOffline = !!req.body.notifyOnRouterOffline;
+  if (req.body.notifyOnRouterOnline !== undefined) updated.notifyOnRouterOnline = !!req.body.notifyOnRouterOnline;
+  if (req.body.notifyOnWebhookLost !== undefined) updated.notifyOnWebhookLost = !!req.body.notifyOnWebhookLost;
   
   if (req.body.secretKey && typeof req.body.secretKey === 'string') {
     updated.secretKey = req.body.secretKey;
@@ -253,6 +266,19 @@ app.post('/api/system/mode', (req, res) => {
   res.json({ success: true, mode });
 });
 
+// Test notification endpoint
+app.post('/api/notification/test', async (req, res) => {
+  try {
+    await dispatchEvent('test_notification', {
+      message: 'This is a test notification from MikroTik Ultra Monitor.',
+      router: db.read('router.json').name || 'Router'
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Delete user API endpoint
 app.delete('/api/users/:username', (req, res) => {
   const { username } = req.params;
@@ -282,6 +308,7 @@ app.delete('/api/users/:username', (req, res) => {
 // 7. Full reset all data
 app.post('/api/system/reset', (req, res) => {
   db.resetDatabase();
+  resetCooldowns();
   io.emit('update', getDashboardPayload());
   res.json({ success: true });
 });

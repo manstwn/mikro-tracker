@@ -1,4 +1,5 @@
 import * as db from './db.js';
+import * as notification from './notification.js';
 
 let broadcastCallback = () => {};
 
@@ -102,6 +103,7 @@ export function handleWebhook(query) {
     db.addHistoryEvent('router_online', null, now);
     db.addAlert('Router Restored', `Router ${routerName} has restored connection.`);
     db.addLog('Router Online', `Router ${routerName} status is now ONLINE.`);
+    notification.dispatchEvent('router_online', { router: routerName });
   } else {
     db.addLog('Webhook Received', `Updated router traffic. RX Speed: ${rxSpeed} B/s, TX Speed: ${txSpeed} B/s`);
   }
@@ -142,6 +144,7 @@ export function handleWebhook(query) {
         db.addHistoryEvent('user_online', username, now);
         db.addAlert('User Online', `User ${username} is now online.`);
         db.addLog('User Online', `User ${username} connected.`);
+        notification.dispatchEvent('user_online', { user: username });
       }
     } else {
       // User is offline (not in webhook)
@@ -163,6 +166,7 @@ export function handleWebhook(query) {
         db.addHistoryEvent('user_offline', username, now);
         db.addAlert('User Offline', `User ${username} has disconnected.`);
         db.addLog('User Offline', `User ${username} disconnected.`);
+        notification.dispatchEvent('user_offline', { user: username });
       }
     }
   }
@@ -193,6 +197,7 @@ export function handleWebhook(query) {
       db.addHistoryEvent('user_online', username, now);
       db.addAlert('User Online', `User ${username} is now online.`);
       db.addLog('User Online', `User ${username} connected.`);
+      notification.dispatchEvent('user_online', { user: username });
     }
   }
 
@@ -230,6 +235,8 @@ export function checkHeartbeats() {
       db.addHistoryEvent('router_offline', null, now);
       db.addAlert('Webhook Lost', `Router connection lost. Last webhook received 5 minutes ago.`);
       db.addLog('Router Offline', `Router status changed to OFFLINE (timeout).`);
+      notification.dispatchEvent('webhook_lost', { router: router.name || 'Router' });
+      notification.dispatchEvent('router_offline', { router: router.name || 'Router' });
       stateChanged = true;
     }
   }
@@ -260,6 +267,7 @@ export function checkHeartbeats() {
         db.addHistoryEvent('user_offline', username, now);
         db.addAlert('User Offline', `User ${username} has disconnected.`);
         db.addLog('User Offline', `User ${username} disconnected.`);
+        notification.dispatchEvent('user_offline', { user: username });
         stateChanged = true;
       }
     }
@@ -270,5 +278,8 @@ export function checkHeartbeats() {
     db.write('sessions.json', sessions);
     broadcastCallback();
   }
+
+  // Check for persistent offline user notifications
+  notification.checkUserOfflineNotifications();
 }
 

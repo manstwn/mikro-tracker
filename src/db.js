@@ -23,7 +23,17 @@ const DEFAULT_FILES = {
     logRetention: 90,
     autoSave: true,
     autoBackup: true,
-    speedCapacity: 50
+    speedCapacity: 50,
+    notificationEnabled: false,
+    notificationEndpoint: '',
+    notificationHeaders: '{}',
+    notificationUserOfflineTimeout: 2,
+    notificationCooldown: 300,
+    notifyOnUserOffline: true,
+    notifyOnUserOnline: false,
+    notifyOnRouterOffline: true,
+    notifyOnRouterOnline: false,
+    notifyOnWebhookLost: true
   },
   'system.json': {
     mode: "RUNNING"

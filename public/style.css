@@ -1371,6 +1371,12 @@ button, input, select, textarea {
   color: var(--accent-green);
 }
 
+.uptime-users-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0));
+  margin: 4px 0 16px 0;
+}
+
 /* Dashboard Users List and Uptime Rows */
 .user-summary-pills {
   display: flex;
