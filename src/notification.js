@@ -66,16 +66,19 @@ export async function dispatchEvent(eventType, details = {}) {
       markSent(eventKey);
       const body = await response.text();
       db.addLog('Notification Sent', `Event "${eventType}" sent to ${url} (${response.status})`);
+      saveHistory({ eventType, url, payload, status: response.status, success: true, responseBody: body });
       return { sent: true, status: response.status, body };
     }
 
     const body = await response.text();
     const errMsg = `HTTP ${response.status}`;
     db.addLog('Notification Failed', `Event "${eventType}" to ${url} - ${errMsg}`);
+    saveHistory({ eventType, url, payload, status: response.status, success: false, responseBody: body });
     return { sent: false, error: errMsg, status: response.status, body };
   } catch (err) {
     const errMsg = err.name === 'TimeoutError' ? 'timeout' : err.message;
     db.addLog('Notification Failed', `Event "${eventType}" to ${url} - ${errMsg}`);
+    saveHistory({ eventType, url, payload, status: 0, success: false, error: errMsg });
     return { sent: false, error: errMsg };
   }
 }
@@ -124,4 +127,23 @@ export async function checkUserOfflineNotifications() {
 
 export function resetCooldowns() {
   cooldownTracker.clear();
+}
+
+function saveHistory(entry) {
+  const notifications = db.read('notifications.json');
+  notifications.unshift({
+    id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 5),
+    time: new Date().toISOString(),
+    ...entry
+  });
+  db.write('notifications.json', notifications);
+}
+
+export function getHistory() {
+  return db.read('notifications.json');
+}
+
+export function clearHistory() {
+  db.write('notifications.json', []);
+  db.addLog('Notification History Cleared', 'All notification send history has been wiped.');
 }

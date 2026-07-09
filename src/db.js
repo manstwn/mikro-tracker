@@ -52,7 +52,8 @@ const DEFAULT_FILES = {
   'traffic.json': [],
   'history.json': [],
   'alerts.json': [],
-  'logs.json': []
+  'logs.json': [],
+  'notifications.json': []
 };
 
 // Ensure directories exist

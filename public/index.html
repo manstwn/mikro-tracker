@@ -516,6 +516,30 @@
               </div>
             </form>
           </div>
+
+          <!-- Notification History -->
+          <div class="card glass" style="margin-top:24px;">
+            <div class="card-header">
+              <h2>Notification Send History</h2>
+              <button class="btn" id="clear-notif-history-btn" style="background:var(--accent-red);box-shadow:0 4px 14px var(--accent-red-glow);font-size:12px;padding:8px 16px;">Clear History</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="notif-history-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Event</th>
+                    <th>Status</th>
+                    <th>Payload</th>
+                    <th>Response</th>
+                  </tr>
+                </thead>
+                <tbody id="notif-history-body">
+                  <tr><td colspan="5" class="text-center">No notification history yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <!-- SETTINGS SECTION -->

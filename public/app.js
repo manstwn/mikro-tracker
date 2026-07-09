@@ -411,6 +411,7 @@ socket.on('update', (data) => {
   renderAlertsTable();
   populateSettingsForm();
   renderSystemLogs();
+  renderNotificationHistory();
 });
 
 // Bootstrap: fetch initial data immediately via HTTP so bars show
@@ -441,6 +442,7 @@ apiFetch('/api/status')
       renderAlertsTable();
       populateSettingsForm();
       renderSystemLogs();
+      renderNotificationHistory();
     }
   })
   .catch(() => { }); // ignore if not available, socket will cover it
@@ -1315,6 +1317,61 @@ document.getElementById('notification-form').addEventListener('submit', (e) => {
       saveBtn.textContent = 'Save Notification Settings';
       console.error('Error saving notification settings:', err);
       alert('Failed to save notification settings: ' + err.message);
+    });
+});
+
+// Render Notification History
+function renderNotificationHistory() {
+  const tbody = document.getElementById('notif-history-body');
+  if (!tbody || !currentData || !currentData.notifications) return;
+
+  const history = currentData.notifications;
+  if (history.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No notification history yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = history.slice(0, 50).map(entry => {
+    const statusClass = entry.success ? 'badge-success' : 'badge-danger';
+    const statusText = entry.success ? `Sent (${entry.status})` : (entry.error || `Failed (${entry.status})`);
+
+    const payloadStr = JSON.stringify(entry.payload || {});
+    const responseStr = entry.responseBody
+      ? (entry.responseBody.length > 80 ? entry.responseBody.slice(0, 80) + '...' : entry.responseBody)
+      : (entry.error || '-');
+
+    return `
+      <tr>
+        <td class="font-mono" style="font-size:11px;white-space:nowrap;">${formatDateTime(entry.time)}</td>
+        <td><strong>${entry.eventType}</strong></td>
+        <td><span class="${statusClass}" style="display:inline-block;font-size:10px;">${statusText}</span></td>
+        <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-family:monospace;color:var(--text-muted);" title="${payloadStr}">${payloadStr}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-family:monospace;color:var(--text-muted);">${responseStr}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Clear Notification History
+document.getElementById('clear-notif-history-btn').addEventListener('click', () => {
+  if (!confirm('Clear all notification send history?')) return;
+  const btn = document.getElementById('clear-notif-history-btn');
+  btn.disabled = true;
+  btn.textContent = 'Clearing...';
+
+  apiFetch('/api/notifications/clear', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Clear History';
+      if (data.success) {
+        document.getElementById('notif-history-body').innerHTML = '<tr><td colspan="5" class="text-center">No notification history yet.</td></tr>';
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = 'Clear History';
+      console.error('Error clearing notification history:', err);
     });
 });
 

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import * as db from './db.js';
 import * as monitor from './monitor.js';
 import * as auth from './auth.js';
-import { resetCooldowns, dispatchEvent } from './notification.js';
+import { resetCooldowns, dispatchEvent, getHistory, clearHistory } from './notification.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -149,7 +149,8 @@ function getDashboardPayload() {
     alerts: alerts.slice(0, 100),
     logs: logs.slice(0, 100),
     traffic: traffic.slice(-120), // Last 120 datapoints (1 hour of 30s updates)
-    sessions: recentSessions
+    sessions: recentSessions,
+    notifications: db.read('notifications.json')
   };
 }
 
@@ -282,6 +283,12 @@ app.post('/api/notification/test', async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// Clear notification history
+app.post('/api/notifications/clear', (req, res) => {
+  clearHistory();
+  res.json({ success: true });
 });
 
 // Delete user API endpoint
