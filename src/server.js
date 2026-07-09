@@ -270,11 +270,15 @@ app.post('/api/system/mode', (req, res) => {
 // Test notification endpoint
 app.post('/api/notification/test', async (req, res) => {
   try {
-    await dispatchEvent('test_notification', {
+    const result = await dispatchEvent('test_notification', {
       message: 'This is a test notification from MikroTik Ultra Monitor.',
       router: db.read('router.json').name || 'Router'
     });
-    res.json({ success: true });
+    if (result && result.sent) {
+      res.json({ success: true, status: result.status });
+    } else {
+      res.status(400).json({ success: false, error: result?.error || 'Notification failed silently' });
+    }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

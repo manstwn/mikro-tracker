@@ -21,17 +21,21 @@ function sendPost(url, headers, payload) {
       const isHttps = urlObj.protocol === 'https:';
       const lib = isHttps ? https : http;
 
+      const port = urlObj.port || (isHttps ? 443 : 80);
+
       const options = {
         hostname: urlObj.hostname,
-        port: urlObj.port || (isHttps ? 443 : 80),
+        port,
         path: urlObj.pathname + urlObj.search,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(data),
+          'User-Agent': 'MicroMonitor/2.0',
           ...headers
         },
-        timeout: 10000
+        timeout: 15000,
+        rejectUnauthorized: false
       };
 
       const req = lib.request(options, (res) => {
@@ -65,10 +69,16 @@ function markSent(eventKey) {
 
 export async function dispatchEvent(eventType, details = {}) {
   const config = db.read('config.json');
-  if (!config.notificationEnabled || !config.notificationEndpoint) return;
 
-  const eventKey = `${eventType}:${details.user || details.router || 'global'}`;
-  if (isOnCooldown(eventKey)) return;
+  if (!config.notificationEndpoint) {
+    db.addLog('Notification Failed', `No endpoint configured for "${eventType}"`);
+    return { sent: false, error: 'No notification endpoint configured' };
+  }
+
+  if (!config.notificationEnabled) {
+    db.addLog('Notification Failed', `Notifications disabled for "${eventType}"`);
+    return { sent: false, error: 'Notifications are disabled' };
+  }
 
   const notifConfig = {
     notifyOnUserOffline: config.notifyOnUserOffline,
@@ -87,7 +97,14 @@ export async function dispatchEvent(eventType, details = {}) {
   };
 
   const flag = eventFlagMap[eventType];
-  if (flag && !notifConfig[flag]) return;
+  if (flag && !notifConfig[flag]) {
+    return { sent: false, error: `Event type "${eventType}" is not enabled in notification settings` };
+  }
+
+  const eventKey = `${eventType}:${details.user || details.router || 'global'}`;
+  if (isOnCooldown(eventKey)) {
+    return { sent: false, error: 'On cooldown' };
+  }
 
   const url = config.notificationEndpoint;
   const headers = parseHeaders(config.notificationHeaders);
@@ -103,9 +120,12 @@ export async function dispatchEvent(eventType, details = {}) {
   if (result.status >= 200 && result.status < 300) {
     markSent(eventKey);
     db.addLog('Notification Sent', `Event "${eventType}" sent to ${url} (${result.status})`);
-  } else {
-    db.addLog('Notification Failed', `Event "${eventType}" to ${url} - ${result.error || result.status}`);
+    return { sent: true, status: result.status, body: result.body };
   }
+
+  const errMsg = result.error || `HTTP ${result.status}`;
+  db.addLog('Notification Failed', `Event "${eventType}" to ${url} - ${errMsg}`);
+  return { sent: false, error: errMsg, status: result.status };
 }
 
 export async function checkUserOfflineNotifications() {
