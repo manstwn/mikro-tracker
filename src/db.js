@@ -33,7 +33,8 @@ const DEFAULT_FILES = {
     notifyOnUserOnline: false,
     notifyOnRouterOffline: true,
     notifyOnRouterOnline: false,
-    notifyOnWebhookLost: true
+    notifyOnWebhookLost: true,
+    notificationMessageTemplate: 'User {username} offline since {day}, {date} {time} - please check connection'
   },
   'system.json': {
     mode: "RUNNING"

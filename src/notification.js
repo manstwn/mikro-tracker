@@ -1,6 +1,34 @@
 import * as db from './db.js';
 
 const cooldownTracker = new Map();
+const prolongedOfflineSent = new Map(); // username -> lastOffline timestamp, prevents re-sending per session
+
+function buildMessage(template, eventType, details, now) {
+  if (!template) return '';
+
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const vars = {
+    '{username}': details.user || '',
+    '{router}': details.router || '',
+    '{time}': now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    '{date}': now.toLocaleDateString(),
+    '{day}': dayNames[now.getDay()],
+    '{dayNumber}': String(now.getDate()),
+    '{month}': monthNames[now.getMonth()],
+    '{monthNumber}': String(now.getMonth() + 1),
+    '{year}': String(now.getFullYear()),
+    '{iso}': now.toISOString(),
+    '{event}': eventType
+  };
+
+  let result = template;
+  for (const [key, val] of Object.entries(vars)) {
+    result = result.replaceAll(key, val);
+  }
+  return result;
+}
 
 export async function dispatchEvent(eventType, details = {}) {
   const config = db.read('config.json');
@@ -44,9 +72,13 @@ export async function dispatchEvent(eventType, details = {}) {
   const url = config.notificationEndpoint;
   const headers = parseHeaders(config.notificationHeaders);
 
+  const now = new Date();
+  const message = buildMessage(config.notificationMessageTemplate, eventType, details, now);
+
   const payload = {
     event: eventType,
-    timestamp: new Date().toISOString(),
+    timestamp: now.toISOString(),
+    message,
     ...details
   };
 
@@ -112,21 +144,32 @@ export async function checkUserOfflineNotifications() {
   const now = Date.now();
   const users = db.read('users.json');
 
+  // Clean up entries for users who are now online (ended their offline session)
+  for (const [username, user] of Object.entries(users)) {
+    if (user.status === 'online' && prolongedOfflineSent.has(username)) {
+      prolongedOfflineSent.delete(username);
+    }
+  }
+
   for (const [username, user] of Object.entries(users)) {
     if (user.status === 'offline' && user.lastOffline) {
       const offlineSince = new Date(user.lastOffline).getTime();
-      if (!isNaN(offlineSince) && (now - offlineSince >= userOfflineTimeoutMs)) {
-        const eventKey = `user_offline:${username}`;
-        if (!isOnCooldown(eventKey)) {
-          await dispatchEvent('user_offline', { user: username, offlineSince: user.lastOffline });
-        }
-      }
+      if (isNaN(offlineSince)) continue;
+      if (now - offlineSince < userOfflineTimeoutMs) continue;
+
+      // Check if we already sent a notification for THIS offline session
+      const alreadyNotified = prolongedOfflineSent.get(username);
+      if (alreadyNotified === user.lastOffline) continue;
+
+      await dispatchEvent('user_offline', { user: username, offlineSince: user.lastOffline });
+      prolongedOfflineSent.set(username, user.lastOffline);
     }
   }
 }
 
 export function resetCooldowns() {
   cooldownTracker.clear();
+  prolongedOfflineSent.clear();
 }
 
 function saveHistory(entry) {

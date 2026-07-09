@@ -229,6 +229,7 @@ app.post('/api/settings', (req, res) => {
   if (req.body.notifyOnRouterOffline !== undefined) updated.notifyOnRouterOffline = !!req.body.notifyOnRouterOffline;
   if (req.body.notifyOnRouterOnline !== undefined) updated.notifyOnRouterOnline = !!req.body.notifyOnRouterOnline;
   if (req.body.notifyOnWebhookLost !== undefined) updated.notifyOnWebhookLost = !!req.body.notifyOnWebhookLost;
+  if (req.body.notificationMessageTemplate !== undefined) updated.notificationMessageTemplate = req.body.notificationMessageTemplate;
   
   if (req.body.secretKey && typeof req.body.secretKey === 'string') {
     updated.secretKey = req.body.secretKey;
@@ -272,7 +273,7 @@ app.post('/api/system/mode', (req, res) => {
 app.post('/api/notification/test', async (req, res) => {
   try {
     const result = await dispatchEvent('test_notification', {
-      message: 'This is a test notification from MikroTik Ultra Monitor.',
+      user: 'test-user',
       router: db.read('router.json').name || 'Router'
     });
     if (result && result.sent) {

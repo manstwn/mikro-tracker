@@ -1270,6 +1270,9 @@ function populateNotificationForm(config) {
   document.getElementById('notif-headers').value = config.notificationHeaders || '{}';
   document.getElementById('notif-user-offline-timeout').value = config.notificationUserOfflineTimeout || 2;
   document.getElementById('notif-cooldown').value = config.notificationCooldown || 300;
+  if (document.activeElement.id !== 'notif-message-template') {
+    document.getElementById('notif-message-template').value = config.notificationMessageTemplate || '';
+  }
   document.getElementById('notif-enabled').checked = !!config.notificationEnabled;
   document.getElementById('notif-on-user-offline').checked = config.notifyOnUserOffline !== false;
   document.getElementById('notif-on-user-online').checked = !!config.notifyOnUserOnline;
@@ -1288,6 +1291,7 @@ document.getElementById('notification-form').addEventListener('submit', (e) => {
     notificationUserOfflineTimeout: parseInt(document.getElementById('notif-user-offline-timeout').value, 10) || 2,
     notificationCooldown: parseInt(document.getElementById('notif-cooldown').value, 10) || 300,
     notificationEnabled: document.getElementById('notif-enabled').checked,
+    notificationMessageTemplate: document.getElementById('notif-message-template').value,
     notifyOnUserOffline: document.getElementById('notif-on-user-offline').checked,
     notifyOnUserOnline: document.getElementById('notif-on-user-online').checked,
     notifyOnRouterOffline: document.getElementById('notif-on-router-offline').checked,
