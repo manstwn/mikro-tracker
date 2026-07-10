@@ -148,7 +148,7 @@ function getDashboardPayload() {
     history: history.slice(0, 100), // Limit to 100 for performance
     alerts: alerts.slice(0, 100),
     logs: logs.slice(0, 100),
-    traffic: traffic.slice(-120), // Last 120 datapoints (1 hour of 30s updates)
+    traffic: traffic.slice(-2880), // Last 2880 datapoints (24 hours of 30s updates)
     sessions: recentSessions,
     notifications: db.read('notifications.json')
   };

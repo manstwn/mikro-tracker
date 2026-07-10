@@ -41,11 +41,17 @@ function safeParseDate(dateVal) {
 
 let selectedUsername = null;
 let trafficChart = null;
-let currentChartMinutes = 1; // Default chart view
+let currentChartMinutes = 1;
+let chartType = 'line';
+let datasetView = 'both';
 
 // Uptime bar range state (hours) — default 1D
 let routerUptimeHours = 24;
 let usersUptimeHours = 24;
+
+// Previous traffic values for flash animation
+let prevTrafficRx = null;
+let prevTrafficTx = null;
 
 // Track previous values for change flash animations
 let prevRxSpeed = null;
@@ -279,76 +285,123 @@ chartOptButtons.forEach(btn => {
   });
 });
 
+// Chart Type Toggle (Line / Bar)
+const chartTypeButtons = document.querySelectorAll('.chart-type-btn');
+chartTypeButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    chartTypeButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    chartType = btn.getAttribute('data-type');
+    if (trafficChart) {
+      trafficChart.destroy();
+      trafficChart = null;
+    }
+    renderTrafficChart();
+  });
+});
+
+// Dataset Toggle (Both / RX / TX)
+const dsButtons = document.querySelectorAll('.ds-btn');
+dsButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    dsButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    datasetView = btn.getAttribute('data-ds');
+    if (trafficChart) {
+      trafficChart.destroy();
+      trafficChart = null;
+    }
+    renderTrafficChart();
+  });
+});
+
 function initChart() {
   const ctx = document.getElementById('trafficChart').getContext('2d');
+  const isLine = chartType === 'line';
 
-  // Create gradient glows
-  const rxGradient = ctx.createLinearGradient(0, 0, 0, 400);
-  rxGradient.addColorStop(0, 'rgba(0, 230, 118, 0.25)');
+  const rxGradient = ctx.createLinearGradient(0, 0, 0, 350);
+  rxGradient.addColorStop(0, 'rgba(0, 230, 118, 0.2)');
   rxGradient.addColorStop(1, 'rgba(0, 230, 118, 0)');
 
-  const txGradient = ctx.createLinearGradient(0, 0, 0, 400);
-  txGradient.addColorStop(0, 'rgba(213, 0, 249, 0.25)');
+  const txGradient = ctx.createLinearGradient(0, 0, 0, 350);
+  txGradient.addColorStop(0, 'rgba(213, 0, 249, 0.2)');
   txGradient.addColorStop(1, 'rgba(213, 0, 249, 0)');
 
+  const datasets = [];
+  const showRx = datasetView === 'both' || datasetView === 'rx';
+  const showTx = datasetView === 'both' || datasetView === 'tx';
+
+  if (showRx) {
+    datasets.push({
+      label: 'RX (Download) Speed',
+      data: [],
+      borderColor: '#00e676',
+      backgroundColor: rxGradient,
+      fill: isLine,
+      tension: isLine ? 0.4 : 0,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      barPercentage: 0.6,
+      categoryPercentage: 0.8
+    });
+  }
+
+  if (showTx) {
+    datasets.push({
+      label: 'TX (Upload) Speed',
+      data: [],
+      borderColor: '#d500f9',
+      backgroundColor: txGradient,
+      fill: isLine,
+      tension: isLine ? 0.4 : 0,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      barPercentage: 0.6,
+      categoryPercentage: 0.8
+    });
+  }
+
   trafficChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [
-        {
-          label: 'RX (Download) Speed',
-          data: [],
-          borderColor: '#00e676',
-          backgroundColor: rxGradient,
-          fill: true,
-          tension: 0.4,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5
-        },
-        {
-          label: 'TX (Upload) Speed',
-          data: [],
-          borderColor: '#d500f9',
-          backgroundColor: txGradient,
-          fill: true,
-          tension: 0.4,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 5
-        }
-      ]
-    },
+    type: isLine ? 'line' : 'bar',
+    data: { labels: [], datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { duration: 200 },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
       plugins: {
         legend: {
-          labels: { color: '#f1f3f9', font: { family: 'Inter' } }
+          labels: { color: '#f1f3f9', font: { family: 'Inter', size: 11 } }
         },
         tooltip: {
           mode: 'index',
           intersect: false,
           callbacks: {
             label: function (context) {
-              return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' Mbps';
+              const val = context.parsed.y !== undefined ? context.parsed.y : context.parsed.x;
+              return context.dataset.label + ': ' + val.toFixed(2) + ' Mbps';
             }
           }
         }
       },
       scales: {
         x: {
-          grid: { color: 'rgba(255, 255, 255, 0.05)' },
-          ticks: { color: '#8b9bb4', font: { family: 'Inter', size: 10 } }
+          grid: { color: 'rgba(255, 255, 255, 0.04)', display: isLine },
+          ticks: { color: '#8b9bb4', font: { family: 'Inter', size: 9 }, maxTicksLimit: 15 }
         },
         y: {
-          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          beginAtZero: true,
+          grid: { color: 'rgba(255, 255, 255, 0.04)' },
           ticks: {
             color: '#8b9bb4',
             font: { family: 'Inter', size: 10 },
             callback: function (value) {
-              return value.toFixed(2) + ' Mbps';
+              return value.toFixed(1) + ' Mbps';
             }
           }
         }
@@ -358,7 +411,7 @@ function initChart() {
 }
 
 function renderTrafficChart() {
-  if (!trafficChart || !currentData || !currentData.traffic) return;
+  if (!currentData || !currentData.traffic) return;
 
   const clientNow = Date.now();
   const nowMs = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
@@ -367,17 +420,165 @@ function renderTrafficChart() {
   // Filter traffic points within the range
   const filteredTraffic = currentData.traffic.filter(pt => {
     const t = safeParseDate(pt.time);
+    if (isNaN(t)) return false;
     return nowMs - t <= timeLimitMs;
   });
 
-  const labels = filteredTraffic.map(pt => formatTimeOnly(pt.time));
-  const rxData = filteredTraffic.map(pt => (pt.rxSpeed * 8) / 1000000);
-  const txData = filteredTraffic.map(pt => (pt.txSpeed * 8) / 1000000);
+  // Downsample for long ranges to keep chart responsive
+  const maxPoints = 500;
+  let displayTraffic = filteredTraffic;
+  if (filteredTraffic.length > maxPoints) {
+    const step = Math.ceil(filteredTraffic.length / maxPoints);
+    displayTraffic = filteredTraffic.filter((_, i) => i % step === 0);
+  }
+
+  const labels = displayTraffic.map(pt => formatTimeOnly(pt.time));
+  const rxData = displayTraffic.map(pt => (pt.rxSpeed * 8) / 1000000);
+  const txData = displayTraffic.map(pt => (pt.txSpeed * 8) / 1000000);
+
+  if (!trafficChart) {
+    initChart();
+  }
+
+  const showRx = datasetView === 'both' || datasetView === 'rx';
+  const showTx = datasetView === 'both' || datasetView === 'tx';
 
   trafficChart.data.labels = labels;
-  trafficChart.data.datasets[0].data = rxData;
-  trafficChart.data.datasets[1].data = txData;
-  trafficChart.update('none'); // Update without animation for smoother streaming
+
+  let dsIndex = 0;
+  if (showRx) {
+    trafficChart.data.datasets[dsIndex].data = rxData;
+    dsIndex++;
+  }
+  if (showTx) {
+    trafficChart.data.datasets[dsIndex].data = txData;
+  }
+
+  trafficChart.update('none');
+
+  // Update traffic stats cards and summary table
+  updateTrafficStatsCards(filteredTraffic);
+  updateTrafficSummaryTable(filteredTraffic);
+}
+
+function updateTrafficStatsCards(trafficData) {
+  if (!trafficData || trafficData.length === 0) return;
+
+  const latest = trafficData[trafficData.length - 1];
+  const rxMbps = (latest.rxSpeed * 8) / 1000000;
+  const txMbps = (latest.txSpeed * 8) / 1000000;
+
+  // Calculate peak and average
+  let peakRx = 0, peakTx = 0, sumRx = 0, sumTx = 0;
+  for (const pt of trafficData) {
+    const r = (pt.rxSpeed * 8) / 1000000;
+    const t = (pt.txSpeed * 8) / 1000000;
+    if (r > peakRx) peakRx = r;
+    if (t > peakTx) peakTx = t;
+    sumRx += r;
+    sumTx += t;
+  }
+  const avgRx = sumRx / trafficData.length;
+  const avgTx = sumTx / trafficData.length;
+
+  // Flash on change
+  const rxEl = document.getElementById('t-current-rx');
+  const txEl = document.getElementById('t-current-tx');
+  if (prevTrafficRx !== null && rxMbps !== prevTrafficRx) {
+    rxEl.classList.remove('traffic-flash-green');
+    void rxEl.offsetWidth;
+    rxEl.classList.add('traffic-flash-green');
+  }
+  if (prevTrafficTx !== null && txMbps !== prevTrafficTx) {
+    txEl.classList.remove('traffic-flash-purple');
+    void txEl.offsetWidth;
+    txEl.classList.add('traffic-flash-purple');
+  }
+  prevTrafficRx = rxMbps;
+  prevTrafficTx = txMbps;
+
+  document.getElementById('t-current-rx').textContent = rxMbps.toFixed(2) + ' Mbps';
+  document.getElementById('t-current-tx').textContent = txMbps.toFixed(2) + ' Mbps';
+  document.getElementById('t-peak-rx').textContent = peakRx.toFixed(2) + ' Mbps';
+  document.getElementById('t-peak-tx').textContent = peakTx.toFixed(2) + ' Mbps';
+  document.getElementById('t-avg-rx').textContent = avgRx.toFixed(2) + ' Mbps';
+  document.getElementById('t-avg-tx').textContent = avgTx.toFixed(2) + ' Mbps';
+}
+
+function updateTrafficSummaryTable(trafficData) {
+  if (!trafficData || trafficData.length === 0) return;
+
+  const latest = trafficData[trafficData.length - 1];
+  const currentRx = (latest.rxSpeed * 8) / 1000000;
+  const currentTx = (latest.txSpeed * 8) / 1000000;
+
+  let sumRx = 0, sumTx = 0, maxRx = 0, maxTx = 0, minRx = Infinity, minTx = Infinity;
+  let totalBytesRx = 0, totalBytesTx = 0;
+
+  for (let i = 1; i < trafficData.length; i++) {
+    const prev = trafficData[i - 1];
+    const curr = trafficData[i];
+
+    // Delta data transfer since last sample
+    const deltaBytesRx = Math.max(0, curr.rx - prev.rx);
+    const deltaBytesTx = Math.max(0, curr.tx - prev.tx);
+    totalBytesRx += deltaBytesRx;
+    totalBytesTx += deltaBytesTx;
+
+    const r = (curr.rxSpeed * 8) / 1000000;
+    const t = (curr.txSpeed * 8) / 1000000;
+
+    sumRx += r;
+    sumTx += t;
+    if (r > maxRx) maxRx = r;
+    if (t > maxTx) maxTx = t;
+    if (r < minRx) minRx = r;
+    if (t < minTx) minTx = t;
+  }
+
+  // For the first point, use it's speed as min if only one point
+  if (trafficData.length === 1) {
+    minRx = currentRx;
+    minTx = currentTx;
+    maxRx = currentRx;
+    maxTx = currentTx;
+  }
+
+  if (minRx === Infinity) minRx = 0;
+  if (minTx === Infinity) minTx = 0;
+
+  const avgRx = sumRx / trafficData.length;
+  const avgTx = sumTx / trafficData.length;
+
+  document.getElementById('ts-current-rx').textContent = currentRx.toFixed(2);
+  document.getElementById('ts-current-tx').textContent = currentTx.toFixed(2);
+  document.getElementById('ts-avg-rx').textContent = avgRx.toFixed(2);
+  document.getElementById('ts-avg-tx').textContent = avgTx.toFixed(2);
+  document.getElementById('ts-max-rx').textContent = maxRx.toFixed(2);
+  document.getElementById('ts-max-tx').textContent = maxTx.toFixed(2);
+  document.getElementById('ts-min-rx').textContent = minRx.toFixed(2);
+  document.getElementById('ts-min-tx').textContent = minTx.toFixed(2);
+
+  // Format total data
+  const unitEl = document.getElementById('ts-total-unit');
+  const totalRxEl = document.getElementById('ts-total-rx');
+  const totalTxEl = document.getElementById('ts-total-tx');
+
+  if (totalBytesRx > 1073741824) {
+    totalRxEl.textContent = (totalBytesRx / 1073741824).toFixed(2);
+    totalTxEl.textContent = (totalBytesTx / 1073741824).toFixed(2);
+    unitEl.textContent = 'GB';
+  } else if (totalBytesRx > 1048576) {
+    totalRxEl.textContent = (totalBytesRx / 1048576).toFixed(2);
+    totalTxEl.textContent = (totalBytesTx / 1048576).toFixed(2);
+    unitEl.textContent = 'MB';
+  } else {
+    totalRxEl.textContent = totalBytesRx.toFixed(0);
+    totalTxEl.textContent = totalBytesTx.toFixed(0);
+    unitEl.textContent = 'B';
+  }
+
+  document.getElementById('ts-points').textContent = trafficData.length;
 }
 
 // Receive Socket updates

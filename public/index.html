@@ -385,19 +385,118 @@
         <section id="traffic-section" class="content-section">
           <div class="card glass">
             <div class="card-header flex-header">
-              <h2>Real-time Interface Bandwidth Speed</h2>
+              <h2>Traffic Speed Monitor</h2>
+              <div class="chart-view-controls">
+                <button class="chart-type-btn active" data-type="line">Line</button>
+                <button class="chart-type-btn" data-type="bar">Bar</button>
+              </div>
+            </div>
+
+            <!-- Traffic Stats Cards -->
+            <div class="traffic-stats-grid">
+              <div class="traffic-stat-card">
+                <span class="traffic-stat-label">Current RX</span>
+                <span class="traffic-stat-value green" id="t-current-rx">0 Mbps</span>
+              </div>
+              <div class="traffic-stat-card">
+                <span class="traffic-stat-label">Current TX</span>
+                <span class="traffic-stat-value purple" id="t-current-tx">0 Mbps</span>
+              </div>
+              <div class="traffic-stat-card">
+                <span class="traffic-stat-label">Peak RX</span>
+                <span class="traffic-stat-value green" id="t-peak-rx">0 Mbps</span>
+              </div>
+              <div class="traffic-stat-card">
+                <span class="traffic-stat-label">Peak TX</span>
+                <span class="traffic-stat-value purple" id="t-peak-tx">0 Mbps</span>
+              </div>
+              <div class="traffic-stat-card">
+                <span class="traffic-stat-label">Avg RX</span>
+                <span class="traffic-stat-value green" id="t-avg-rx">0 Mbps</span>
+              </div>
+              <div class="traffic-stat-card">
+                <span class="traffic-stat-label">Avg TX</span>
+                <span class="traffic-stat-value purple" id="t-avg-tx">0 Mbps</span>
+              </div>
+            </div>
+
+            <!-- Chart Controls Row -->
+            <div class="chart-controls-row">
               <div class="chart-options">
                 <button class="chart-opt-btn active" data-minutes="1">1 Min</button>
                 <button class="chart-opt-btn" data-minutes="5">5 Min</button>
                 <button class="chart-opt-btn" data-minutes="15">15 Min</button>
                 <button class="chart-opt-btn" data-minutes="30">30 Min</button>
                 <button class="chart-opt-btn" data-minutes="60">1 Hour</button>
+                <button class="chart-opt-btn" data-minutes="360">6 Hour</button>
+                <button class="chart-opt-btn" data-minutes="720">12 Hour</button>
                 <button class="chart-opt-btn" data-minutes="1440">24 Hour</button>
               </div>
+              <div class="dataset-toggle">
+                <button class="ds-btn active" data-ds="both">Both</button>
+                <button class="ds-btn" data-ds="rx">RX</button>
+                <button class="ds-btn" data-ds="tx">TX</button>
+              </div>
             </div>
-            
+
+            <!-- Chart Area -->
             <div class="chart-container">
               <canvas id="trafficChart"></canvas>
+            </div>
+
+            <!-- Traffic Summary Table -->
+            <div class="traffic-summary">
+              <div class="traffic-summary-header">
+                <h3>Traffic Statistics (Selected Period)</h3>
+              </div>
+              <div class="traffic-summary-scroll">
+                <table class="traffic-stats-table">
+                  <thead>
+                    <tr>
+                      <th>Metric</th>
+                      <th>RX (Download)</th>
+                      <th>TX (Upload)</th>
+                      <th>Unit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Current Speed</td>
+                      <td class="green-cell" id="ts-current-rx">0</td>
+                      <td class="purple-cell" id="ts-current-tx">0</td>
+                      <td>Mbps</td>
+                    </tr>
+                    <tr>
+                      <td>Average Speed</td>
+                      <td class="green-cell" id="ts-avg-rx">0</td>
+                      <td class="purple-cell" id="ts-avg-tx">0</td>
+                      <td>Mbps</td>
+                    </tr>
+                    <tr>
+                      <td>Maximum Speed</td>
+                      <td class="green-cell" id="ts-max-rx">0</td>
+                      <td class="purple-cell" id="ts-max-tx">0</td>
+                      <td>Mbps</td>
+                    </tr>
+                    <tr>
+                      <td>Minimum Speed</td>
+                      <td class="green-cell" id="ts-min-rx">0</td>
+                      <td class="purple-cell" id="ts-min-tx">0</td>
+                      <td>Mbps</td>
+                    </tr>
+                    <tr>
+                      <td>Total Data Transferred</td>
+                      <td class="green-cell" id="ts-total-rx">0</td>
+                      <td class="purple-cell" id="ts-total-tx">0</td>
+                      <td id="ts-total-unit">B</td>
+                    </tr>
+                    <tr>
+                      <td>Data Points</td>
+                      <td colspan="3" id="ts-points">0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
