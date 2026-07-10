@@ -45,6 +45,11 @@ let currentChartMinutes = 1;
 let chartType = 'line';
 let datasetView = 'both';
 
+// Traffic date/view mode state
+let trafficViewMode = 'live';   // 'live' | 'day' | 'week' | 'month'
+let trafficSelectedDate = null; // Date object representing the anchor day
+let trafficHistoricalData = []; // cache of fetched historical points
+
 // Uptime bar range state (hours) — default 1D
 let routerUptimeHours = 24;
 let usersUptimeHours = 24;
@@ -274,14 +279,182 @@ function updateSystemModeButtons(mode) {
   }
 }
 
+// -----------------------------------------------------------------------
+// Traffic view-mode pills (Live / Day / Week / Month)
+// -----------------------------------------------------------------------
+const trafficViewPills = document.querySelectorAll('.traffic-view-pill');
+const trafficDateNav   = document.getElementById('traffic-date-nav');
+const trafficDateInput = document.getElementById('traffic-date-input');
+const trafficPrevBtn   = document.getElementById('traffic-prev-btn');
+const trafficNextBtn   = document.getElementById('traffic-next-btn');
+const trafficDateLabel = document.getElementById('traffic-date-label');
+const chartLiveOptions = document.getElementById('chart-live-options');
+
+// Initialise anchor date to today
+trafficSelectedDate = new Date();
+trafficDateInput.value = toLocalDateString(trafficSelectedDate);
+
+trafficViewPills.forEach(pill => {
+  pill.addEventListener('click', () => {
+    trafficViewPills.forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    trafficViewMode = pill.dataset.view;
+
+    const isLive = trafficViewMode === 'live';
+    trafficDateNav.style.display    = isLive ? 'none' : 'flex';
+    chartLiveOptions.style.display  = isLive ? '' : 'none';
+
+    // Reset anchor to today when switching into a historical mode
+    if (!isLive) {
+      trafficSelectedDate = new Date();
+      trafficDateInput.value = toLocalDateString(trafficSelectedDate);
+    }
+
+    updateTrafficDateLabel();
+    fetchAndRenderTraffic();
+  });
+});
+
+trafficPrevBtn.addEventListener('click', () => shiftTrafficDate(-1));
+trafficNextBtn.addEventListener('click', () => shiftTrafficDate(+1));
+
+trafficDateInput.addEventListener('change', () => {
+  const parts = trafficDateInput.value.split('-').map(Number);
+  if (parts.length === 3) {
+    trafficSelectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    updateTrafficDateLabel();
+    fetchAndRenderTraffic();
+  }
+});
+
+// Shift selected date by ±1 day/week/month depending on current view mode
+function shiftTrafficDate(direction) {
+  const d = new Date(trafficSelectedDate);
+  if (trafficViewMode === 'day') {
+    d.setDate(d.getDate() + direction);
+  } else if (trafficViewMode === 'week') {
+    d.setDate(d.getDate() + direction * 7);
+  } else if (trafficViewMode === 'month') {
+    d.setMonth(d.getMonth() + direction);
+  }
+  trafficSelectedDate = d;
+  trafficDateInput.value = toLocalDateString(d);
+  updateTrafficDateLabel();
+  fetchAndRenderTraffic();
+}
+
+// Returns "YYYY-MM-DD" in local time (avoids UTC-shift issues with input[type=date])
+function toLocalDateString(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// Build a human-readable label for the current selection
+function updateTrafficDateLabel() {
+  if (!trafficDateLabel) return;
+  const d = trafficSelectedDate;
+  const today = new Date();
+  const isToday =
+    d.getDate() === today.getDate() &&
+    d.getMonth() === today.getMonth() &&
+    d.getFullYear() === today.getFullYear();
+
+  if (trafficViewMode === 'day') {
+    trafficDateLabel.textContent = isToday
+      ? 'Today'
+      : d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  } else if (trafficViewMode === 'week') {
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay()); // Sunday
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    trafficDateLabel.textContent =
+      weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' – ' +
+      weekEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  } else if (trafficViewMode === 'month') {
+    trafficDateLabel.textContent = d.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+  }
+}
+
+// Compute [from, to] ISO strings for the current view mode + selected date
+function getTrafficDateRange() {
+  const d = trafficSelectedDate;
+
+  if (trafficViewMode === 'day') {
+    const from = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+    const to   = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+    return { from, to };
+  }
+
+  if (trafficViewMode === 'week') {
+    const from = new Date(d);
+    from.setDate(d.getDate() - d.getDay()); // Sunday
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(from);
+    to.setDate(from.getDate() + 6);
+    to.setHours(23, 59, 59, 999);
+    return { from, to };
+  }
+
+  if (trafficViewMode === 'month') {
+    const from = new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
+    const to   = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { from, to };
+  }
+
+  return null;
+}
+
+// Fetch historical data from API and render, or use live data
+async function fetchAndRenderTraffic() {
+  if (trafficViewMode === 'live') {
+    trafficHistoricalData = [];
+    renderTrafficChart();
+    return;
+  }
+
+  const range = getTrafficDateRange();
+  if (!range) return;
+
+  // Show loading state on chart
+  const chartContainer = document.querySelector('.chart-container');
+  let loadingEl = chartContainer.querySelector('.chart-loading');
+  if (!loadingEl) {
+    loadingEl = document.createElement('div');
+    loadingEl.className = 'chart-loading';
+    loadingEl.textContent = 'Loading data…';
+    chartContainer.appendChild(loadingEl);
+  }
+  loadingEl.style.display = 'flex';
+
+  try {
+    const r = await apiFetch(
+      `/api/traffic?from=${range.from.toISOString()}&to=${range.to.toISOString()}`
+    );
+    const json = await r.json();
+    trafficHistoricalData = json.success ? json.data : [];
+  } catch (e) {
+    trafficHistoricalData = [];
+    console.error('[Traffic] fetch error:', e);
+  } finally {
+    if (loadingEl) loadingEl.style.display = 'none';
+  }
+
+  renderTrafficChart();
+}
+
+// -----------------------------------------------------------------------
 // Chart.js Setup & Toggling
+// -----------------------------------------------------------------------
 const chartOptButtons = document.querySelectorAll('.chart-opt-btn');
 chartOptButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     chartOptButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentChartMinutes = parseInt(btn.getAttribute('data-minutes'), 10);
-    renderTrafficChart();
+    if (trafficViewMode === 'live') renderTrafficChart();
   });
 });
 
@@ -413,26 +586,52 @@ function initChart() {
 function renderTrafficChart() {
   if (!currentData || !currentData.traffic) return;
 
-  const clientNow = Date.now();
-  const nowMs = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
-  const timeLimitMs = currentChartMinutes * 60 * 1000;
+  let displayTraffic = [];
 
-  // Filter traffic points within the range
-  const filteredTraffic = currentData.traffic.filter(pt => {
-    const t = safeParseDate(pt.time);
-    if (isNaN(t)) return false;
-    return nowMs - t <= timeLimitMs;
-  });
+  if (trafficViewMode === 'live') {
+    // ---- LIVE mode: use rolling window from live payload ----
+    const clientNow = Date.now();
+    const nowMs = isNaN(serverTimeOffset) ? clientNow : (clientNow - serverTimeOffset);
+    const timeLimitMs = currentChartMinutes * 60 * 1000;
 
-  // Downsample for long ranges to keep chart responsive
-  const maxPoints = 500;
-  let displayTraffic = filteredTraffic;
-  if (filteredTraffic.length > maxPoints) {
-    const step = Math.ceil(filteredTraffic.length / maxPoints);
-    displayTraffic = filteredTraffic.filter((_, i) => i % step === 0);
+    const filteredTraffic = currentData.traffic.filter(pt => {
+      const t = safeParseDate(pt.time);
+      if (isNaN(t)) return false;
+      return nowMs - t <= timeLimitMs;
+    });
+
+    // Downsample for long ranges to keep chart responsive
+    const maxPoints = 500;
+    displayTraffic = filteredTraffic;
+    if (filteredTraffic.length > maxPoints) {
+      const step = Math.ceil(filteredTraffic.length / maxPoints);
+      displayTraffic = filteredTraffic.filter((_, i) => i % step === 0);
+    }
+  } else {
+    // ---- DAY / WEEK / MONTH mode: use fetched historical data ----
+    // For week and month views we bucket/downsample data for readability
+    const maxPoints = trafficViewMode === 'day' ? 500 : trafficViewMode === 'week' ? 336 : 720;
+    displayTraffic = trafficHistoricalData;
+
+    if (displayTraffic.length > maxPoints) {
+      const step = Math.ceil(displayTraffic.length / maxPoints);
+      displayTraffic = displayTraffic.filter((_, i) => i % step === 0);
+    }
   }
 
-  const labels = displayTraffic.map(pt => formatTimeOnly(pt.time));
+  const labels = displayTraffic.map(pt => {
+    const d = new Date(pt.time);
+    if (trafficViewMode === 'month') {
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+             d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    if (trafficViewMode === 'week') {
+      return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' +
+             d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return formatTimeOnly(pt.time);
+  });
+
   const rxData = displayTraffic.map(pt => (pt.rxSpeed * 8) / 1000000);
   const txData = displayTraffic.map(pt => (pt.txSpeed * 8) / 1000000);
 
@@ -457,8 +656,8 @@ function renderTrafficChart() {
   trafficChart.update('none');
 
   // Update traffic stats cards and summary table
-  updateTrafficStatsCards(filteredTraffic);
-  updateTrafficSummaryTable(filteredTraffic);
+  updateTrafficStatsCards(displayTraffic);
+  updateTrafficSummaryTable(displayTraffic);
 }
 
 function updateTrafficStatsCards(trafficData) {

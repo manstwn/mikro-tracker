@@ -392,6 +392,28 @@
               </div>
             </div>
 
+            <!-- Date Navigation Bar -->
+            <div class="traffic-date-bar">
+              <!-- View mode pills -->
+              <div class="traffic-view-pills">
+                <button class="traffic-view-pill active" data-view="live">Live</button>
+                <button class="traffic-view-pill" data-view="day">Day</button>
+                <button class="traffic-view-pill" data-view="week">Week</button>
+                <button class="traffic-view-pill" data-view="month">Month</button>
+              </div>
+              <!-- Prev / Date Input / Next  (hidden in Live mode) -->
+              <div class="traffic-date-nav" id="traffic-date-nav" style="display:none;">
+                <button class="traffic-nav-btn" id="traffic-prev-btn" title="Previous">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <input type="date" id="traffic-date-input" class="traffic-date-input">
+                <button class="traffic-nav-btn" id="traffic-next-btn" title="Next">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <span class="traffic-date-label" id="traffic-date-label">Today</span>
+              </div>
+            </div>
+
             <!-- Traffic Stats Cards -->
             <div class="traffic-stats-grid">
               <div class="traffic-stat-card">
@@ -422,7 +444,8 @@
 
             <!-- Chart Controls Row -->
             <div class="chart-controls-row">
-              <div class="chart-options">
+              <!-- Live time-window buttons — hidden when in day/week/month mode -->
+              <div class="chart-options" id="chart-live-options">
                 <button class="chart-opt-btn active" data-minutes="1">1 Min</button>
                 <button class="chart-opt-btn" data-minutes="5">5 Min</button>
                 <button class="chart-opt-btn" data-minutes="15">15 Min</button>

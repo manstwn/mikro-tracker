@@ -1987,3 +1987,151 @@ button, input, select, textarea {
 .traffic-flash-purple {
   animation: traffic-flash-purple 0.5s ease-out;
 }
+
+/* ============================================================
+   TRAFFIC DATE NAVIGATION BAR
+   ============================================================ */
+
+.traffic-date-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-md);
+}
+
+/* View mode pills: Live / Day / Week / Month */
+.traffic-view-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.traffic-view-pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  letter-spacing: 0.03em;
+}
+
+.traffic-view-pill:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  background: var(--accent-blue-glow);
+}
+
+.traffic-view-pill.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+  box-shadow: 0 0 10px var(--accent-blue-glow);
+}
+
+/* Prev / Date input / Next navigator */
+.traffic-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.traffic-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.traffic-nav-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  background: var(--accent-blue-glow);
+}
+
+.traffic-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.traffic-date-input {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-sm);
+  padding: 6px 12px;
+  color: var(--text-main);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  height: 32px;
+}
+
+.traffic-date-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 8px var(--accent-blue-glow);
+}
+
+/* Style the native date picker calendar icon */
+.traffic-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+
+.traffic-date-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* Loading overlay for chart when fetching historical data */
+.chart-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 10, 15, 0.7);
+  border-radius: var(--border-radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  z-index: 5;
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 768px) {
+  .traffic-date-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .traffic-date-nav {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .traffic-view-pills {
+    justify-content: center;
+  }
+}

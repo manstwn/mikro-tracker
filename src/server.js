@@ -196,6 +196,30 @@ app.get('/api/status', (req, res) => {
   res.json(getDashboardPayload());
 });
 
+// 4c. Traffic data by date range (used by Traffic page date picker)
+// GET /api/traffic?from=<ISO>&to=<ISO>
+app.get('/api/traffic', (req, res) => {
+  const { from, to } = req.query;
+  if (!from || !to) {
+    return res.status(400).json({ success: false, error: 'from and to query params are required' });
+  }
+
+  const fromMs = new Date(from).getTime();
+  const toMs   = new Date(to).getTime();
+
+  if (isNaN(fromMs) || isNaN(toMs)) {
+    return res.status(400).json({ success: false, error: 'Invalid date format' });
+  }
+
+  const all = db.read('traffic.json');
+  const filtered = all.filter(pt => {
+    const t = new Date(pt.time).getTime();
+    return t >= fromMs && t <= toMs;
+  });
+
+  res.json({ success: true, data: filtered });
+});
+
 
 // 5. Update settings configuration API
 app.post('/api/settings', (req, res) => {

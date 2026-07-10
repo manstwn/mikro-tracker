@@ -1,0 +1,947 @@
+[
+  {
+    "time": "2026-07-10T09:59:36.031Z",
+    "event": "Auto Cleanup",
+    "details": "Completed retention database cleanup."
+  },
+  {
+    "time": "2026-07-02T06:49:08.928Z",
+    "event": "User Offline",
+    "details": "User user7 disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.927Z",
+    "event": "User Offline",
+    "details": "User user7 has disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.925Z",
+    "event": "User Offline",
+    "details": "User user6 disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.924Z",
+    "event": "User Offline",
+    "details": "User user6 has disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.921Z",
+    "event": "User Offline",
+    "details": "User user5 disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.920Z",
+    "event": "User Offline",
+    "details": "User user5 has disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.917Z",
+    "event": "User Offline",
+    "details": "User user4 disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.916Z",
+    "event": "User Offline",
+    "details": "User user4 has disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.912Z",
+    "event": "User Offline",
+    "details": "User user3 disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.910Z",
+    "event": "User Offline",
+    "details": "User user3 has disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.907Z",
+    "event": "User Offline",
+    "details": "User user1 disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.906Z",
+    "event": "User Offline",
+    "details": "User user1 has disconnected."
+  },
+  {
+    "time": "2026-07-02T06:49:08.903Z",
+    "event": "Router Offline",
+    "details": "Router status changed to OFFLINE (timeout)."
+  },
+  {
+    "time": "2026-07-02T06:49:08.901Z",
+    "event": "Webhook Lost",
+    "details": "Router connection lost. Last webhook received 5 minutes ago."
+  },
+  {
+    "time": "2026-07-02T06:48:13.909Z",
+    "event": "Backup Created",
+    "details": "Storage backup folder: backup_2026-07-02T06-48-13-901Z"
+  },
+  {
+    "time": "2026-07-02T06:48:13.898Z",
+    "event": "Auto Cleanup",
+    "details": "Completed retention database cleanup."
+  },
+  {
+    "time": "2026-07-01T16:36:57.344Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 17561 B/s, TX Speed: 12155 B/s"
+  },
+  {
+    "time": "2026-07-01T16:36:47.345Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 23033 B/s, TX Speed: 13635 B/s"
+  },
+  {
+    "time": "2026-07-01T16:36:37.335Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 37255 B/s, TX Speed: 7898 B/s"
+  },
+  {
+    "time": "2026-07-01T16:36:27.332Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 12133 B/s, TX Speed: 21276 B/s"
+  },
+  {
+    "time": "2026-07-01T16:36:17.330Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 28856 B/s, TX Speed: 5504 B/s"
+  },
+  {
+    "time": "2026-07-01T16:36:07.329Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 10467 B/s, TX Speed: 5805 B/s"
+  },
+  {
+    "time": "2026-07-01T16:35:57.328Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 25852 B/s, TX Speed: 18254 B/s"
+  },
+  {
+    "time": "2026-07-01T16:35:47.322Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 45917 B/s, TX Speed: 15782 B/s"
+  },
+  {
+    "time": "2026-07-01T16:35:37.313Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 25176 B/s, TX Speed: 4669 B/s"
+  },
+  {
+    "time": "2026-07-01T16:35:27.309Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 46455 B/s, TX Speed: 3026 B/s"
+  },
+  {
+    "time": "2026-07-01T16:35:17.302Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 41154 B/s, TX Speed: 10437 B/s"
+  },
+  {
+    "time": "2026-07-01T16:35:07.293Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 42749 B/s, TX Speed: 17096 B/s"
+  },
+  {
+    "time": "2026-07-01T16:34:57.285Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 44893 B/s, TX Speed: 12187 B/s"
+  },
+  {
+    "time": "2026-07-01T16:34:47.274Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 54295 B/s, TX Speed: 8535 B/s"
+  },
+  {
+    "time": "2026-07-01T16:34:37.270Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 49518 B/s, TX Speed: 7825 B/s"
+  },
+  {
+    "time": "2026-07-01T16:34:27.267Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 34173 B/s, TX Speed: 2315 B/s"
+  },
+  {
+    "time": "2026-07-01T16:34:17.257Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 46979 B/s, TX Speed: 7143 B/s"
+  },
+  {
+    "time": "2026-07-01T16:34:07.247Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 8916 B/s, TX Speed: 13136 B/s"
+  },
+  {
+    "time": "2026-07-01T16:34:05.596Z",
+    "event": "Backup Created",
+    "details": "Storage backup folder: backup_2026-07-01T16-34-05-589Z"
+  },
+  {
+    "time": "2026-07-01T16:34:05.588Z",
+    "event": "Auto Cleanup",
+    "details": "Completed retention database cleanup."
+  },
+  {
+    "time": "2026-07-01T16:33:57.243Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 29271 B/s, TX Speed: 14744 B/s"
+  },
+  {
+    "time": "2026-07-01T16:33:47.223Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 23331 B/s, TX Speed: 14474 B/s"
+  },
+  {
+    "time": "2026-07-01T16:33:37.223Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 14616 B/s, TX Speed: 16758 B/s"
+  },
+  {
+    "time": "2026-07-01T16:33:27.221Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 36726 B/s, TX Speed: 6886 B/s"
+  },
+  {
+    "time": "2026-07-01T16:33:16.198Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 28005 B/s, TX Speed: 21343 B/s"
+  },
+  {
+    "time": "2026-07-01T16:33:06.196Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 9307 B/s, TX Speed: 13306 B/s"
+  },
+  {
+    "time": "2026-07-01T16:32:56.189Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39794 B/s, TX Speed: 12542 B/s"
+  },
+  {
+    "time": "2026-07-01T16:32:46.179Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 48165 B/s, TX Speed: 9237 B/s"
+  },
+  {
+    "time": "2026-07-01T16:32:36.176Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 6588 B/s, TX Speed: 17595 B/s"
+  },
+  {
+    "time": "2026-07-01T16:32:26.170Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 15685 B/s, TX Speed: 2285 B/s"
+  },
+  {
+    "time": "2026-07-01T16:32:16.166Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 24327 B/s, TX Speed: 10978 B/s"
+  },
+  {
+    "time": "2026-07-01T16:32:06.155Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 5239 B/s, TX Speed: 16080 B/s"
+  },
+  {
+    "time": "2026-07-01T16:31:56.147Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 8874 B/s, TX Speed: 17998 B/s"
+  },
+  {
+    "time": "2026-07-01T16:31:46.135Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 20096 B/s, TX Speed: 16438 B/s"
+  },
+  {
+    "time": "2026-07-01T16:31:36.121Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 23748 B/s, TX Speed: 16675 B/s"
+  },
+  {
+    "time": "2026-07-01T16:31:26.113Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 43969 B/s, TX Speed: 20358 B/s"
+  },
+  {
+    "time": "2026-07-01T16:31:16.100Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 22568 B/s, TX Speed: 5866 B/s"
+  },
+  {
+    "time": "2026-07-01T16:31:06.088Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 5357 B/s, TX Speed: 7736 B/s"
+  },
+  {
+    "time": "2026-07-01T16:30:56.082Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 16117 B/s, TX Speed: 10439 B/s"
+  },
+  {
+    "time": "2026-07-01T16:30:46.075Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 43274 B/s, TX Speed: 10143 B/s"
+  },
+  {
+    "time": "2026-07-01T16:30:36.062Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 27614 B/s, TX Speed: 17639 B/s"
+  },
+  {
+    "time": "2026-07-01T16:30:26.058Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 13682 B/s, TX Speed: 3619 B/s"
+  },
+  {
+    "time": "2026-07-01T16:30:16.046Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 48873 B/s, TX Speed: 5958 B/s"
+  },
+  {
+    "time": "2026-07-01T16:30:06.045Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 30465 B/s, TX Speed: 10658 B/s"
+  },
+  {
+    "time": "2026-07-01T16:29:56.046Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 14670 B/s, TX Speed: 20561 B/s"
+  },
+  {
+    "time": "2026-07-01T16:29:50.236Z",
+    "event": "Backup Created",
+    "details": "Storage backup folder: backup_2026-07-01T16-29-50-229Z"
+  },
+  {
+    "time": "2026-07-01T16:29:50.228Z",
+    "event": "Auto Cleanup",
+    "details": "Completed retention database cleanup."
+  },
+  {
+    "time": "2026-07-01T16:29:46.047Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 16050 B/s, TX Speed: 13417 B/s"
+  },
+  {
+    "time": "2026-07-01T16:29:36.031Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 51286 B/s, TX Speed: 21944 B/s"
+  },
+  {
+    "time": "2026-07-01T16:29:26.024Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 21064 B/s, TX Speed: 4635 B/s"
+  },
+  {
+    "time": "2026-07-01T16:29:16.013Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 33942 B/s, TX Speed: 8829 B/s"
+  },
+  {
+    "time": "2026-07-01T16:29:06.003Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 5144 B/s, TX Speed: 18404 B/s"
+  },
+  {
+    "time": "2026-07-01T16:28:55.994Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 29946 B/s, TX Speed: 8207 B/s"
+  },
+  {
+    "time": "2026-07-01T16:28:45.981Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 7330 B/s, TX Speed: 2259 B/s"
+  },
+  {
+    "time": "2026-07-01T16:28:35.970Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 30610 B/s, TX Speed: 9458 B/s"
+  },
+  {
+    "time": "2026-07-01T16:28:25.958Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 5926 B/s, TX Speed: 4780 B/s"
+  },
+  {
+    "time": "2026-07-01T16:28:15.947Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 24934 B/s, TX Speed: 8566 B/s"
+  },
+  {
+    "time": "2026-07-01T16:28:05.934Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 13351 B/s, TX Speed: 9721 B/s"
+  },
+  {
+    "time": "2026-07-01T16:27:55.931Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 12635 B/s, TX Speed: 16148 B/s"
+  },
+  {
+    "time": "2026-07-01T16:27:45.927Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 16703 B/s, TX Speed: 19527 B/s"
+  },
+  {
+    "time": "2026-07-01T16:27:35.926Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 45534 B/s, TX Speed: 14450 B/s"
+  },
+  {
+    "time": "2026-07-01T16:27:28.098Z",
+    "event": "Backup Created",
+    "details": "Storage backup folder: backup_2026-07-01T16-27-28-089Z"
+  },
+  {
+    "time": "2026-07-01T16:27:28.086Z",
+    "event": "Auto Cleanup",
+    "details": "Completed retention database cleanup."
+  },
+  {
+    "time": "2026-07-01T16:27:25.916Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 38438 B/s, TX Speed: 21938 B/s"
+  },
+  {
+    "time": "2026-07-01T16:27:15.909Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 27565 B/s, TX Speed: 21150 B/s"
+  },
+  {
+    "time": "2026-07-01T16:27:05.903Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 10366 B/s, TX Speed: 3151 B/s"
+  },
+  {
+    "time": "2026-07-01T16:26:55.898Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 26600 B/s, TX Speed: 5776 B/s"
+  },
+  {
+    "time": "2026-07-01T16:26:45.896Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 8494 B/s, TX Speed: 21056 B/s"
+  },
+  {
+    "time": "2026-07-01T16:26:35.887Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 42284 B/s, TX Speed: 16060 B/s"
+  },
+  {
+    "time": "2026-07-01T16:26:25.883Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 33215 B/s, TX Speed: 10857 B/s"
+  },
+  {
+    "time": "2026-07-01T16:26:15.875Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 19239 B/s, TX Speed: 14953 B/s"
+  },
+  {
+    "time": "2026-07-01T16:26:05.864Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 28330 B/s, TX Speed: 21521 B/s"
+  },
+  {
+    "time": "2026-07-01T16:26:00.642Z",
+    "event": "User Offline",
+    "details": "User user2 disconnected."
+  },
+  {
+    "time": "2026-07-01T16:26:00.642Z",
+    "event": "User Offline",
+    "details": "User user2 has disconnected."
+  },
+  {
+    "time": "2026-07-01T16:25:55.858Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 23076 B/s, TX Speed: 2234 B/s"
+  },
+  {
+    "time": "2026-07-01T16:25:45.844Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 19965 B/s, TX Speed: 15356 B/s"
+  },
+  {
+    "time": "2026-07-01T16:25:35.836Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 28731 B/s, TX Speed: 7479 B/s"
+  },
+  {
+    "time": "2026-07-01T16:25:25.832Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 54900 B/s, TX Speed: 8511 B/s"
+  },
+  {
+    "time": "2026-07-01T16:25:15.826Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 49441 B/s, TX Speed: 17663 B/s"
+  },
+  {
+    "time": "2026-07-01T16:25:05.819Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 19274 B/s, TX Speed: 11978 B/s"
+  },
+  {
+    "time": "2026-07-01T16:24:55.813Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 70329 B/s, TX Speed: 22536 B/s"
+  },
+  {
+    "time": "2026-07-01T16:24:53.352Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 54634 B/s, TX Speed: 20591 B/s"
+  },
+  {
+    "time": "2026-07-01T16:24:43.337Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 15614 B/s, TX Speed: 6415 B/s"
+  },
+  {
+    "time": "2026-07-01T16:24:33.337Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 48549 B/s, TX Speed: 6492 B/s"
+  },
+  {
+    "time": "2026-07-01T16:24:23.336Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 16688 B/s, TX Speed: 3067 B/s"
+  },
+  {
+    "time": "2026-07-01T16:24:13.328Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 50788 B/s, TX Speed: 17977 B/s"
+  },
+  {
+    "time": "2026-07-01T16:24:05.647Z",
+    "event": "Backup Created",
+    "details": "Storage backup folder: backup_2026-07-01T16-24-05-639Z"
+  },
+  {
+    "time": "2026-07-01T16:24:05.638Z",
+    "event": "Auto Cleanup",
+    "details": "Completed retention database cleanup."
+  },
+  {
+    "time": "2026-07-01T16:24:03.327Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 24181 B/s, TX Speed: 7294 B/s"
+  },
+  {
+    "time": "2026-07-01T16:23:53.327Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 53202 B/s, TX Speed: 6967 B/s"
+  },
+  {
+    "time": "2026-07-01T16:23:43.319Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 6333 B/s, TX Speed: 9653 B/s"
+  },
+  {
+    "time": "2026-07-01T16:23:33.315Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 34449 B/s, TX Speed: 4157 B/s"
+  },
+  {
+    "time": "2026-07-01T16:23:23.312Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 8335 B/s, TX Speed: 10736 B/s"
+  },
+  {
+    "time": "2026-07-01T16:23:13.305Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 26116 B/s, TX Speed: 11310 B/s"
+  },
+  {
+    "time": "2026-07-01T16:23:03.298Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39940 B/s, TX Speed: 4993 B/s"
+  },
+  {
+    "time": "2026-07-01T16:22:53.300Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 42614 B/s, TX Speed: 10668 B/s"
+  },
+  {
+    "time": "2026-07-01T16:22:43.287Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 37522 B/s, TX Speed: 20779 B/s"
+  },
+  {
+    "time": "2026-07-01T16:22:33.282Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 28820 B/s, TX Speed: 13600 B/s"
+  },
+  {
+    "time": "2026-07-01T16:22:23.274Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 44351 B/s, TX Speed: 11919 B/s"
+  },
+  {
+    "time": "2026-07-01T16:22:18.067Z",
+    "event": "Backup Created",
+    "details": "Storage backup folder: backup_2026-07-01T16-22-18-060Z"
+  },
+  {
+    "time": "2026-07-01T16:22:18.059Z",
+    "event": "Auto Cleanup",
+    "details": "Completed retention database cleanup."
+  },
+  {
+    "time": "2026-07-01T16:22:13.275Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 27964 B/s, TX Speed: 11422 B/s"
+  },
+  {
+    "time": "2026-07-01T16:22:03.255Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 22916 B/s, TX Speed: 13115 B/s"
+  },
+  {
+    "time": "2026-07-01T16:21:53.251Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 24830 B/s, TX Speed: 10720 B/s"
+  },
+  {
+    "time": "2026-07-01T16:21:43.245Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 32107 B/s, TX Speed: 18026 B/s"
+  },
+  {
+    "time": "2026-07-01T16:21:33.261Z",
+    "event": "User Online",
+    "details": "User user7 connected."
+  },
+  {
+    "time": "2026-07-01T16:21:33.260Z",
+    "event": "User Online",
+    "details": "User user7 is now online."
+  },
+  {
+    "time": "2026-07-01T16:21:33.258Z",
+    "event": "User Online",
+    "details": "User user6 connected."
+  },
+  {
+    "time": "2026-07-01T16:21:33.257Z",
+    "event": "User Online",
+    "details": "User user6 is now online."
+  },
+  {
+    "time": "2026-07-01T16:21:33.254Z",
+    "event": "User Online",
+    "details": "User user5 connected."
+  },
+  {
+    "time": "2026-07-01T16:21:33.253Z",
+    "event": "User Online",
+    "details": "User user5 is now online."
+  },
+  {
+    "time": "2026-07-01T16:21:33.251Z",
+    "event": "User Online",
+    "details": "User user4 connected."
+  },
+  {
+    "time": "2026-07-01T16:21:33.250Z",
+    "event": "User Online",
+    "details": "User user4 is now online."
+  },
+  {
+    "time": "2026-07-01T16:21:33.248Z",
+    "event": "User Online",
+    "details": "User user3 connected."
+  },
+  {
+    "time": "2026-07-01T16:21:33.247Z",
+    "event": "User Online",
+    "details": "User user3 is now online."
+  },
+  {
+    "time": "2026-07-01T16:21:33.245Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 241730 B/s, TX Speed: 101528 B/s"
+  },
+  {
+    "time": "2026-07-01T16:21:31.498Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 32563 B/s, TX Speed: 15927 B/s"
+  },
+  {
+    "time": "2026-07-01T16:21:21.498Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 29668 B/s, TX Speed: 4135 B/s"
+  },
+  {
+    "time": "2026-07-01T16:21:11.490Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 27133 B/s, TX Speed: 16848 B/s"
+  },
+  {
+    "time": "2026-07-01T16:21:01.480Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 35720 B/s, TX Speed: 3304 B/s"
+  },
+  {
+    "time": "2026-07-01T16:20:51.468Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39642 B/s, TX Speed: 10681 B/s"
+  },
+  {
+    "time": "2026-07-01T16:20:41.466Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 14428 B/s, TX Speed: 14935 B/s"
+  },
+  {
+    "time": "2026-07-01T16:20:31.454Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 25298 B/s, TX Speed: 12351 B/s"
+  },
+  {
+    "time": "2026-07-01T16:20:21.447Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 33322 B/s, TX Speed: 12355 B/s"
+  },
+  {
+    "time": "2026-07-01T16:20:11.437Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 50888 B/s, TX Speed: 12305 B/s"
+  },
+  {
+    "time": "2026-07-01T16:20:01.425Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 10426 B/s, TX Speed: 3002 B/s"
+  },
+  {
+    "time": "2026-07-01T16:19:51.426Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 11265 B/s, TX Speed: 19902 B/s"
+  },
+  {
+    "time": "2026-07-01T16:19:41.419Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 53336 B/s, TX Speed: 15071 B/s"
+  },
+  {
+    "time": "2026-07-01T16:19:31.410Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 35228 B/s, TX Speed: 18250 B/s"
+  },
+  {
+    "time": "2026-07-01T16:19:21.402Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39749 B/s, TX Speed: 14728 B/s"
+  },
+  {
+    "time": "2026-07-01T16:19:11.400Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 37357 B/s, TX Speed: 4736 B/s"
+  },
+  {
+    "time": "2026-07-01T16:19:01.388Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 42515 B/s, TX Speed: 3480 B/s"
+  },
+  {
+    "time": "2026-07-01T16:18:57.009Z",
+    "event": "User Offline",
+    "details": "User user3 disconnected."
+  },
+  {
+    "time": "2026-07-01T16:18:57.008Z",
+    "event": "User Offline",
+    "details": "User user3 has disconnected."
+  },
+  {
+    "time": "2026-07-01T16:18:51.375Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39450 B/s, TX Speed: 21019 B/s"
+  },
+  {
+    "time": "2026-07-01T16:18:41.363Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39159 B/s, TX Speed: 21464 B/s"
+  },
+  {
+    "time": "2026-07-01T16:18:31.361Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 27970 B/s, TX Speed: 11547 B/s"
+  },
+  {
+    "time": "2026-07-01T16:18:21.353Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 14577 B/s, TX Speed: 10314 B/s"
+  },
+  {
+    "time": "2026-07-01T16:18:11.365Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 16949 B/s, TX Speed: 10781 B/s"
+  },
+  {
+    "time": "2026-07-01T16:18:01.339Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 37244 B/s, TX Speed: 11793 B/s"
+  },
+  {
+    "time": "2026-07-01T16:17:51.199Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 33147 B/s, TX Speed: 11213 B/s"
+  },
+  {
+    "time": "2026-07-01T16:17:41.185Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 19655 B/s, TX Speed: 21544 B/s"
+  },
+  {
+    "time": "2026-07-01T16:17:31.191Z",
+    "event": "User Online",
+    "details": "User user3 connected."
+  },
+  {
+    "time": "2026-07-01T16:17:31.191Z",
+    "event": "User Online",
+    "details": "User user3 is now online."
+  },
+  {
+    "time": "2026-07-01T16:17:31.188Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 21650 B/s, TX Speed: 17563 B/s"
+  },
+  {
+    "time": "2026-07-01T16:17:21.993Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 21749 B/s, TX Speed: 7518 B/s"
+  },
+  {
+    "time": "2026-07-01T16:17:11.987Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 52775 B/s, TX Speed: 5100 B/s"
+  },
+  {
+    "time": "2026-07-01T16:17:01.987Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 36455 B/s, TX Speed: 6960 B/s"
+  },
+  {
+    "time": "2026-07-01T16:16:51.978Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39230 B/s, TX Speed: 11475 B/s"
+  },
+  {
+    "time": "2026-07-01T16:16:41.972Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 43263 B/s, TX Speed: 2167 B/s"
+  },
+  {
+    "time": "2026-07-01T16:16:31.971Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 53956 B/s, TX Speed: 12848 B/s"
+  },
+  {
+    "time": "2026-07-01T16:16:21.967Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 27929 B/s, TX Speed: 4771 B/s"
+  },
+  {
+    "time": "2026-07-01T16:16:11.966Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 44062 B/s, TX Speed: 2633 B/s"
+  },
+  {
+    "time": "2026-07-01T16:16:01.964Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 36414 B/s, TX Speed: 8655 B/s"
+  },
+  {
+    "time": "2026-07-01T16:15:51.958Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 36009 B/s, TX Speed: 14594 B/s"
+  },
+  {
+    "time": "2026-07-01T16:15:41.947Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 24049 B/s, TX Speed: 11714 B/s"
+  },
+  {
+    "time": "2026-07-01T16:15:31.939Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 20482 B/s, TX Speed: 12990 B/s"
+  },
+  {
+    "time": "2026-07-01T16:15:21.927Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 24963 B/s, TX Speed: 16044 B/s"
+  },
+  {
+    "time": "2026-07-01T16:15:11.927Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 46790 B/s, TX Speed: 8584 B/s"
+  },
+  {
+    "time": "2026-07-01T16:15:01.923Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 39466 B/s, TX Speed: 19500 B/s"
+  },
+  {
+    "time": "2026-07-01T16:14:51.920Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 41945 B/s, TX Speed: 2192 B/s"
+  },
+  {
+    "time": "2026-07-01T16:14:41.907Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 35142 B/s, TX Speed: 12595 B/s"
+  },
+  {
+    "time": "2026-07-01T16:14:31.906Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 45960 B/s, TX Speed: 10077 B/s"
+  },
+  {
+    "time": "2026-07-01T16:14:21.892Z",
+    "event": "Webhook Received",
+    "details": "Updated router traffic. RX Speed: 36600 B/s, TX Speed: 11135 B/s"
+  },
+  {
+    "time": "2026-07-01T16:14:11.892Z",
+    "event": "User Online",
+    "details": "User user2 connected."
+  },
+  {
+    "time": "2026-07-01T16:14:11.892Z",
+    "event": "User Online",
+    "details": "User user2 is now online."
+  },
+  {
+    "time": "2026-07-01T16:14:11.890Z",
+    "event": "User Online",
+    "details": "User user1 connected."
+  },
+  {
+    "time": "2026-07-01T16:14:11.890Z",
+    "event": "User Online",
+    "details": "User user1 is now online."
+  },
+  {
+    "time": "2026-07-01T16:14:11.888Z",
+    "event": "Router Online",
+    "details": "Router Router status is now ONLINE."
+  },
+  {
+    "time": "2026-07-01T16:14:11.888Z",
+    "event": "Router Restored",
+    "details": "Router Router has restored connection."
+  },
+  {
+    "time": "2026-07-01T16:14:06.105Z",
+    "event": "Database Reset",
+    "details": "The database has been fully reset to initial state."
+  },
+  {
+    "time": "2026-07-01T16:14:06.103Z",
+    "event": "Database Reset",
+    "details": "All system settings and monitoring history were reset."
+  }
+]
