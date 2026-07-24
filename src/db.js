@@ -7,7 +7,11 @@ const __dirname = path.dirname(__filename);
 
 const WORKSPACE_DIR = path.resolve(__dirname, '..');
 const STORAGE_DIR = path.join(WORKSPACE_DIR, 'storage');
-const BACKUP_DIR = path.join(WORKSPACE_DIR, 'backup');
+
+// Hard caps to prevent unbounded storage growth
+const MAX_LOGS    = 500;
+const MAX_ALERTS  = 200;
+const MAX_TRAFFIC = 2880; // 24h at 30s intervals
 
 // In-memory cache for fast reads and changed-only writes
 const cache = {};
@@ -22,7 +26,7 @@ const DEFAULT_FILES = {
     trafficRetention: 30,
     logRetention: 90,
     autoSave: true,
-    autoBackup: true,
+    autoBackup: false,
     speedCapacity: 50,
     notificationEnabled: false,
     notificationEndpoint: '',
@@ -57,50 +61,17 @@ const DEFAULT_FILES = {
   'notifications.json': []
 };
 
-// Ensure directories exist
+// Ensure storage directory exists
 function ensureDirs() {
   if (!fs.existsSync(STORAGE_DIR)) {
     fs.mkdirSync(STORAGE_DIR, { recursive: true });
   }
-  if (!fs.existsSync(BACKUP_DIR)) {
-    fs.mkdirSync(BACKUP_DIR, { recursive: true });
-  }
 }
 
-// Find latest backup folder and try to restore corrupt files
-function attemptRecovery(filename) {
-  console.log(`[DB] Attempting recovery for corrupt file: ${filename}`);
-  if (!fs.existsSync(BACKUP_DIR)) return false;
 
-  const backups = fs.readdirSync(BACKUP_DIR)
-    .filter(f => fs.statSync(path.join(BACKUP_DIR, f)).isDirectory())
-    .sort((a, b) => b.localeCompare(a)); // Sort descending to get latest first
-
-  for (const backupFolder of backups) {
-    const backupFilePath = path.join(BACKUP_DIR, backupFolder, filename);
-    if (fs.existsSync(backupFilePath)) {
-      try {
-        const content = fs.readFileSync(backupFilePath, 'utf8');
-        JSON.parse(content); // validate JSON
-        
-        // Success: Copy backup file back to storage
-        const destPath = path.join(STORAGE_DIR, filename);
-        fs.writeFileSync(destPath, content, 'utf8');
-        console.log(`[DB] Successfully recovered ${filename} from backup: ${backupFolder}`);
-        
-        // Log alert for recovery (we'll append it later to cache or write it)
-        return true;
-      } catch (err) {
-        console.error(`[DB] Backup file ${backupFilePath} is also corrupt:`, err);
-      }
-    }
-  }
-  return false;
-}
 
 export function init() {
   ensureDirs();
-  const recoveredFiles = [];
 
   for (const [filename, defaultValue] of Object.entries(DEFAULT_FILES)) {
     const filePath = path.join(STORAGE_DIR, filename);
@@ -111,16 +82,7 @@ export function init() {
         const content = fs.readFileSync(filePath, 'utf8');
         loadedData = JSON.parse(content);
       } catch (err) {
-        console.error(`[DB] Error parsing ${filename}, file may be corrupt:`, err.message);
-        const recovered = attemptRecovery(filename);
-        if (recovered) {
-          recoveredFiles.push(filename);
-          try {
-            loadedData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          } catch (e) {
-            loadedData = null;
-          }
-        }
+        console.error(`[DB] Error parsing ${filename}, resetting to default:`, err.message);
       }
     }
 
@@ -131,11 +93,6 @@ export function init() {
     }
 
     cache[filename] = loadedData;
-  }
-
-  // If there are recovered files, log an alert
-  if (recoveredFiles.length > 0) {
-    addAlert('Storage Recovered', `Files recovered from backup: ${recoveredFiles.join(', ')}`);
   }
 
   console.log('[DB] JSON database initialized and cached successfully.');
@@ -195,6 +152,8 @@ export function addAlert(type, message) {
     message
   };
   alerts.unshift(newAlert); // Newest first
+  // Cap alerts array to prevent unbounded growth
+  if (alerts.length > MAX_ALERTS) alerts.length = MAX_ALERTS;
   write('alerts.json', alerts);
   addLog(type, message);
 }
@@ -208,42 +167,12 @@ export function addLog(event, details = '') {
     details
   };
   logs.unshift(newLog);
+  // Cap logs array to prevent unbounded growth
+  if (logs.length > MAX_LOGS) logs.length = MAX_LOGS;
   write('logs.json', logs);
 }
 
-// Create backup of all storage files
-export function createBackup() {
-  ensureDirs();
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupFolder = path.join(BACKUP_DIR, `backup_${timestamp}`);
-  fs.mkdirSync(backupFolder, { recursive: true });
 
-  for (const filename of Object.keys(DEFAULT_FILES)) {
-    const srcPath = path.join(STORAGE_DIR, filename);
-    const destPath = path.join(backupFolder, filename);
-    if (fs.existsSync(srcPath)) {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-  console.log(`[DB] Backup created at: ${backupFolder}`);
-  addLog('Backup Created', `Storage backup folder: backup_${timestamp}`);
-
-  // Rotate backups: Keep at most 30 backup folders
-  try {
-    const backups = fs.readdirSync(BACKUP_DIR)
-      .map(name => ({ name, path: path.join(BACKUP_DIR, name) }))
-      .filter(item => fs.statSync(item.path).isDirectory() && item.name.startsWith('backup_'))
-      .sort((a, b) => a.name.localeCompare(b.name)); // oldest first
-
-    while (backups.length > 30) {
-      const oldest = backups.shift();
-      fs.rmSync(oldest.path, { recursive: true, force: true });
-      console.log(`[DB] Removed oldest backup: ${oldest.name}`);
-    }
-  } catch (err) {
-    console.error('[DB] Error rotating backups:', err);
-  }
-}
 
 // Auto Cleanup retention data
 export function runCleanup() {
@@ -279,6 +208,17 @@ export function runCleanup() {
     return now - t <= logRetentionMs;
   });
   write('logs.json', cleanLogs);
+
+  // Cleanup old completed sessions (keep last 5000, remove ones older than historyRetention)
+  const sessions = read('sessions.json');
+  const cleanSessions = sessions
+    .filter(s => {
+      if (!s.end) return true; // keep open sessions
+      const t = new Date(s.end).getTime();
+      return now - t <= historyRetentionMs;
+    })
+    .slice(-5000); // hard cap at 5000 entries
+  write('sessions.json', cleanSessions);
 
   console.log('[DB] Cleanup complete.');
   addLog('Auto Cleanup', 'Completed retention database cleanup.');

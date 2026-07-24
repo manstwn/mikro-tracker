@@ -17,6 +17,8 @@ function apiFetch(url, options = {}) {
 
 socket.on('connect_error', (err) => {
   if (err.message === 'Unauthorized') {
+    // Clear the stale token so pin.html won't immediately redirect back here
+    localStorage.removeItem('mm_token');
     window.location.replace('/pin.html');
   }
 });

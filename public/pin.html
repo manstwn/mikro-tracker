@@ -151,18 +151,30 @@
     const card = document.getElementById('pin-card');
     const submitBtn = document.getElementById('pin-submit');
 
+    let redirecting = false;
+
+    // Check if already authenticated — if yes, go straight to dashboard
     const token = localStorage.getItem('mm_token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
     fetch('/api/auth/check', { headers })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data && data.authenticated) window.location.replace('/');
+        if (data && data.authenticated && !redirecting) {
+          redirecting = true;
+          window.location.replace('/');
+        } else if (!data || !data.authenticated) {
+          // Token is stale/invalid — clear it so socket won't fail
+          localStorage.removeItem('mm_token');
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        localStorage.removeItem('mm_token');
+      });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (redirecting) return;
       errorEl.textContent = '';
       submitBtn.disabled = true;
 
@@ -178,6 +190,7 @@
           if (data.token) {
             localStorage.setItem('mm_token', data.token);
           }
+          redirecting = true;
           window.location.replace('/');
           return;
         }

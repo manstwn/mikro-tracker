@@ -370,27 +370,18 @@ const heartbeatInterval = setInterval(() => {
   }
 }, 60000);
 
-// Scheduled Daily Operations: Backup & Cleanup every 24 hours
-let lastDailyOps = Date.now();
+// Scheduled Daily Cleanup: run every 24 hours
 const dailyInterval = setInterval(() => {
-  const config = db.read('config.json');
   try {
     db.runCleanup();
-    if (config.autoBackup) {
-      db.createBackup();
-    }
   } catch (err) {
-    console.error('[Cron] Error during daily operations:', err);
+    console.error('[Cron] Error during daily cleanup:', err);
   }
-}, 3600000); // Check/Run checks hourly, but perform backups daily or just perform cleanup & backup hourly/daily
+}, 24 * 3600000);
 
-// Perform an initial backup and cleanup at startup
+// Perform initial cleanup at startup
 setTimeout(() => {
-  const config = db.read('config.json');
-  db.runCleanup();
-  if (config.autoBackup) {
-    db.createBackup();
-  }
+  try { db.runCleanup(); } catch(e) { console.error('[Startup] Cleanup error:', e); }
 }, 5000);
 
 // Graceful Shutdown

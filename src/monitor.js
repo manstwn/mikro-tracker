@@ -87,7 +87,7 @@ export function handleWebhook(query) {
   router.txSpeed = txSpeed;
   db.write('router.json', router);
 
-  // Save traffic point
+  // Save traffic point — cap at 2880 entries (24h at 30s intervals)
   const traffic = db.read('traffic.json');
   traffic.push({
     time: now,
@@ -96,6 +96,7 @@ export function handleWebhook(query) {
     rxSpeed,
     txSpeed
   });
+  if (traffic.length > 2880) traffic.splice(0, traffic.length - 2880);
   db.write('traffic.json', traffic);
 
   // Alert and history if Router went ONLINE

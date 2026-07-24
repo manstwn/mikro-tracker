@@ -5,9 +5,15 @@ dotenv.config();
 
 const PIN = process.env.PIN || '';
 const PIN_ENABLED = PIN.length > 0;
-const sessions = new Set();
 const COOKIE_NAME = 'mm_session';
-const SESSION_MAX_AGE = 7 * 24 * 60 * 60;
+const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
+
+// Derive a stable HMAC secret from the PIN so tokens survive restarts.
+// If no PIN is set this is irrelevant (PIN_ENABLED=false means auth is skipped).
+const HMAC_SECRET = crypto
+  .createHmac('sha256', 'mm-auth-secret-v1')
+  .update(PIN || 'no-pin')
+  .digest('hex');
 
 export function isPinEnabled() {
   return PIN_ENABLED;
@@ -17,18 +23,35 @@ export function verifyPin(pin) {
   return PIN_ENABLED && pin === PIN;
 }
 
+// Create a stateless signed token: base64(payload).signature
 export function createSession() {
-  const token = crypto.randomBytes(32).toString('hex');
-  sessions.add(token);
-  return token;
+  const payload = Buffer.from(
+    JSON.stringify({ t: Date.now(), exp: Date.now() + SESSION_MAX_AGE * 1000 })
+  ).toString('base64url');
+  const sig = crypto.createHmac('sha256', HMAC_SECRET).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
 }
 
-export function destroySession(token) {
-  if (token) sessions.delete(token);
+// No-op — stateless tokens can't be explicitly invalidated without a denylist.
+// For a simple home-use monitor, logout just clears the client-side token.
+export function destroySession(_token) {
+  // stateless: nothing to do server-side
 }
 
 export function isValidSession(token) {
-  return !!token && sessions.has(token);
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [payload, sig] = parts;
+  try {
+    const expectedSig = crypto.createHmac('sha256', HMAC_SECRET).update(payload).digest('base64url');
+    // Constant-time comparison to prevent timing attacks
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) return false;
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    return Date.now() < data.exp;
+  } catch {
+    return false;
+  }
 }
 
 export function parseCookies(cookieHeader) {
@@ -61,14 +84,14 @@ const PUBLIC_EXACT = new Set([
   '/health'
 ]);
 
-function isPublicPath(path) {
-  if (PUBLIC_EXACT.has(path)) return true;
-  if (path.startsWith('/webhook/')) return true;
+function isPublicPath(p) {
+  if (PUBLIC_EXACT.has(p)) return true;
+  if (p.startsWith('/webhook/')) return true;
   return false;
 }
 
-function shouldRedirectToPin(path) {
-  return path === '/' || path === '/index.html' || path === '/app.js' || path === '/style.css';
+function shouldRedirectToPin(p) {
+  return p === '/' || p === '/index.html';
 }
 
 export function authMiddleware(req, res, next) {
@@ -93,12 +116,16 @@ export function authMiddleware(req, res, next) {
     return res.redirect('/pin.html');
   }
 
+  // Static assets (app.js, style.css, etc.) return 401 — browser already has them
+  // when the user is authenticated; a 401 won't create a redirect loop.
   return res.status(401).send('Unauthorized');
 }
 
 export function socketAuthMiddleware(socket, next) {
   if (!PIN_ENABLED) return next();
-  const token = socket.handshake.auth?.token || parseCookies(socket.handshake.headers.cookie)[COOKIE_NAME];
+  const token =
+    socket.handshake.auth?.token ||
+    parseCookies(socket.handshake.headers.cookie)[COOKIE_NAME];
   if (isValidSession(token)) return next();
   next(new Error('Unauthorized'));
 }
